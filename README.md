@@ -16,3 +16,7 @@ Scan for a ISV License files in the folders K:\AosService\PackagesLocalDirectory
 Then add license files to the Deployable Package.
 So, you don't need to merge packages to install ISV license.
 Please find details here https://www.yammer.com/dynamicsaxfeedbackprograms/#/Threads/show?threadId=86735357902848
+
+# Invoke-D365FFOAxDBOptimization.ps1
+Create a Scheduled task.
+That executes OLA Index Optimization for all databases every day at 3:07 am
