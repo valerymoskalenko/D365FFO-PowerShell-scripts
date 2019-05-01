@@ -1,5 +1,6 @@
 #Default computer name
-$NewComputerName = 'BBD-Val812U22'
+#https://github.com/valerymoskalenko/D365FFO-PowerShell-scripts/edit/master/Rename-D365FFODevVM.ps1
+$NewComputerName = 'FC-Val10PU24'
 Write-Host "New computer name is $NewComputerName" -ForegroundColor Green
 $wrongSymbols = @(',','~',':','!','@','#','$','%','^','&','''','.','(',')','{','}','_',' ','\','/','*','?','"','<','>','|')  #https://support.microsoft.com/en-ca/help/909264/naming-conventions-in-active-directory-for-computers-domains-sites-and
 [boolean]$WrongComputerName = $False
@@ -104,5 +105,117 @@ $fileHosts = "$env:windir\System32\drivers\etc\hosts"
 "127.0.0.1 $NewComputerName" | Add-Content -PassThru $fileHosts
 "127.0.0.1 localhost" | Add-Content -PassThru $fileHosts
  
+#region Installing d365fo.tools
+ 
+# This is requried by Find-Module, by doing it beforehand we remove some warning messages
+Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope AllUsers
+Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+ 
+# Installing d365fo.tools
+If ((Find-Module -Name d365fo.tools).InstalledDate -eq $null) {
+    Write-Host "Installing d365fo.tools"
+    Write-Host "    Documentation: https://github.com/d365collaborative/d365fo.tools"
+    Install-Module -Name d365fo.tools -SkipPublisherCheck -Scope AllUsers
+}
+else {
+    Write-Host "Updating d365fo.tools"
+    Update-Module -name d365fo.tools -SkipPublisherCheck -Scope AllUsers
+}
+ 
+#endregion
+ 
+#region Schedule script to Optimize Indexes on Databases
+$scriptPath = 'C:\Scripts'
+$scriptName = 'Optimize-AxDB.ps1'
+ 
+If (Test-Path “HKLM:\Software\Microsoft\Microsoft SQL Server\Instance Names\SQL”) {
+ 
+    Write-Host “Installing dbatools PowerShell module”
+    Install-Module -Name dbatools -SkipPublisherCheck -Scope AllUsers
+ 
+    Write-Host “Installing Ola Hallengren's SQL Maintenance scripts”
+    Import-Module -Name dbatools
+    Install-DbaMaintenanceSolution -SqlInstance . -Database master
+    Write-Host “Running Ola Hallengren's IndexOptimize tool”
+ 
+} Else {
+    Write-Verbose “SQL not installed.  Skipped Ola Hallengren's index optimization”
+}
+ 
+Write-Host "Saving Script..." -ForegroundColor Yellow
+$script = @'
+#region run Ola Hallengren's IndexOptimize
+ 
+Function Execute-Sql {
+    Param(
+        [Parameter(Mandatory=$true)][string]$server,
+        [Parameter(Mandatory=$true)][string]$database,
+        [Parameter(Mandatory=$true)][string]$command
+    )
+    Process
+    {
+        $scon = New-Object System.Data.SqlClient.SqlConnection
+        $scon.ConnectionString = "Data Source=$server;Initial Catalog=$database;Integrated Security=true"
+        
+        $cmd = New-Object System.Data.SqlClient.SqlCommand
+        $cmd.Connection = $scon
+        $cmd.CommandTimeout = 0
+        $cmd.CommandText = $command
+ 
+        try
+        {
+            $scon.Open()
+            $cmd.ExecuteNonQuery()
+        }
+        catch [Exception]
+        {
+            Write-Warning $_.Exception.Message
+        }
+        finally
+        {
+            $scon.Dispose()
+            $cmd.Dispose()
+        }
+    }
+}
+ 
+If (Test-Path “HKLM:\Software\Microsoft\Microsoft SQL Server\Instance Names\SQL”) {
+ 
+    # http://calafell.me/defragment-indexes-on-d365-finance-operations-virtual-machine/
+    $sql = "EXECUTE master.dbo.IndexOptimize
+        @Databases = 'ALL_DATABASES',
+        @FragmentationLow = NULL,
+        @FragmentationMedium = 'INDEX_REORGANIZE,INDEX_REBUILD_ONLINE,INDEX_REBUILD_OFFLINE',
+        @FragmentationHigh = 'INDEX_REBUILD_ONLINE,INDEX_REBUILD_OFFLINE',
+        @FragmentationLevel1 = 5,
+        @FragmentationLevel2 = 25,
+        @LogToTable = 'N',
+        @UpdateStatistics = 'ALL',
+        @OnlyModifiedStatistics = 'Y',
+        @MaxDOP = 0"
+ 
+    Execute-Sql -server "." -database "master" -command $sql
+} Else {
+    Write-Verbose “SQL not installed.  Skipped Ola Hallengren's index optimization”
+}
+#endregion
+'@
+ 
+$scriptFullPath = Join-Path $scriptPath $scriptName
+ 
+New-Item -Path $scriptPath -ItemType Directory -Force
+Set-Content -Value $script -Path $scriptFullPath -Force
+ 
+#Write-Host "Running Script for the first time..." -ForegroundColor Yellow
+#Invoke-Expression $scriptFullPath
+ 
+Write-Host "Registering the Script as Scheduled Task..." -ForegroundColor Yellow
+#$atStartUp = New-JobTrigger -AtStartup -RandomDelay 00:40:00
+$atStartUp =  New-JobTrigger -Daily -At "3:07 AM" -DaysInterval 1 -RandomDelay 00:40:00
+$option = New-ScheduledJobOption -StartIfIdle -MultipleInstancePolicy IgnoreNew 
+Register-ScheduledJob -Name AXDBOptimizeStartupTask -Trigger $atStartUp -FilePath $scriptFullPath -ScheduledJobOption $option 
+#Unregister-ScheduledJob -Name AXDBOptimizeStartupTask   
+#endregion  
+ 
 #Rename and restart
-Rename-Computer -NewName $NewComputerName -Restart
+Rename-Computer -NewName $NewComputerName -Restart   
