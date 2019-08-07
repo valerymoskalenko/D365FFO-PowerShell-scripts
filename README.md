@@ -20,3 +20,7 @@ Please find details here https://www.yammer.com/dynamicsaxfeedbackprograms/#/Thr
 # Invoke-D365FFOAxDBOptimization.ps1
 Create a Scheduled task.
 That executes OLA Index Optimization for all databases every day at 3:07 am
+
+# Test-D365FOLabelsFromCheckins.ps1
+Find missing labels between Latest checked-in Label file and all versions of the same Label file.
+It download all versions of Label file from DevOps. Store them. Then compare with the latest version in order to find any missing label Ids
