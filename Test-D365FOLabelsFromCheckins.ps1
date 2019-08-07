@@ -1,3 +1,4 @@
+#https://github.com/valerymoskalenko/D365FFO-PowerShell-scripts/blob/master/Test-D365FOLabelsFromCheckins.ps1
 Set-StrictMode -Version Latest
 Set-Location -Path C:\Scripts
 
