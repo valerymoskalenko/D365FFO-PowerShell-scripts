@@ -1,9 +1,19 @@
 #Default computer name
 #https://github.com/valerymoskalenko/D365FFO-PowerShell-scripts/edit/master/Rename-D365FFODevVM.ps1
-# Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/valerymoskalenko/D365FFO-PowerShell-scripts/master/Rename-D365FFODevVM.ps1'))
+#region Fast execution <--
+#Set-ExecutionPolicy Bypass -Scope Process -Force; 
+#$NewComputerName = 'FC-Val10PU24'
+#iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/valerymoskalenko/D365FFO-PowerShell-scripts/master/Rename-D365FFODevVM.ps1'))
+#endregion Fast execution -->
 
 #region Define New Computer name <--
-$NewComputerName = 'FC-Val10PU24'
+#$NewComputerName = 'FC-Val10PU24'
+if ($null -eq $newComputerName)
+{
+    Write-Error "Computer name '$newComputerName' is empty."
+    Write-Host "Please update computer name. And repeat the script" -ForegroundColor Red
+    break;
+}
 Write-Host "New computer name is $NewComputerName" -ForegroundColor Green
 $wrongSymbols = @(',','~',':','!','@','#','$','%','^','&','''','.','(',')','{','}','_',' ','\','/','*','?','"','<','>','|')  #https://support.microsoft.com/en-ca/help/909264/naming-conventions-in-active-directory-for-computers-domains-sites-and
 [boolean]$WrongComputerName = $False
@@ -32,11 +42,11 @@ function Disable-IEESC
     Stop-Process -Name Explorer
     Write-Host “IE Enhanced Security Configuration (ESC) has been disabled.” -ForegroundColor Green
 }
-Disable-IEESC 
+Disable-IEESC
 #endregion Disable IE Enhanced Security Configuration -->
 
 #region Disable UAC <--
-Write-Verbose( "Disable UAC") -Verbose  # More details here https://www.powershellgallery.com/packages/cEPRSDisableUAC     
+Write-Verbose( "Disable UAC") -Verbose  # More details here https://www.powershellgallery.com/packages/cEPRSDisableUAC
 & "$env:SystemRoot\System32\reg.exe" ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v ConsentPromptBehaviorAdmin /t REG_DWORD /d 4 /f
 & "$env:SystemRoot\System32\reg.exe" ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v EnableInstallerDetection /t REG_DWORD /d 1 /f
 & "$env:SystemRoot\System32\reg.exe" ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v EnableLUA /t REG_DWORD /d 0 /f
@@ -56,7 +66,7 @@ Add-MpPreference -ExclusionPath 'C:\AosService\PackagesLocalDirectory\Bin','K:\A
 Add-MpPreference -ExclusionProcess @('Fabric.exe','FabricHost.exe','FabricInstallerService.exe','FabricSetup.exe','FabricDeployer.exe',
     'ImageBuilder.exe','FabricGateway.exe','FabricDCA.exe','FabricFAS.exe','FabricUOS.exe','FabricRM.exe','FileStoreService.exe')
 Add-MpPreference -ExclusionProcess @('sqlservr.exe','pgc.exe','labelC.exe','xppc.exe','SyncEngine.exe','xppcAgent.exe','ReportingServicesService.exe','iisexpress.exe')
-Add-MpPreference -ExclusionPath 'C:\Program Files\Microsoft SQL Server\MSSQL13.MSSQLSERVER\MSSQL\Binn' 
+Add-MpPreference -ExclusionPath 'C:\Program Files\Microsoft SQL Server\MSSQL13.MSSQLSERVER\MSSQL\Binn'
 #endregion Configure Windows Defender -->
 
 #region Installing d365fo.tools and dbatools <--
@@ -121,14 +131,14 @@ $fileHosts = "$env:windir\System32\drivers\etc\hosts"
 
 #region Check and Clean up InventDimFieldBinding Table <--
 Write-Host "Checking InventDimFieldBinding table for orphan InventProductDimensionFlavor record" -ForegroundColor Yellow
-$InventDimFieldBinding = Invoke-DbaQuery -SqlInstance localhost -Database AxDB -Query "select * from InventDimFieldBinding" 
+$InventDimFieldBinding = Invoke-DbaQuery -SqlInstance localhost -Database AxDB -Query "select * from InventDimFieldBinding"
 $InventDimFieldBinding | FT -AutoSize -Wrap
-#If table contains record regarding *Flavor, then we will clean up whole table. DB Sync will restore all information there. 
-$InventDimFieldBindingFlavor = Invoke-DbaQuery -SqlInstance localhost -Database AxDB -Query "select * from InventDimFieldBinding where CLASSNAME = 'InventProductDimensionFlavor'" 
+#If table contains record regarding *Flavor, then we will clean up whole table. DB Sync will restore all information there.
+$InventDimFieldBindingFlavor = Invoke-DbaQuery -SqlInstance localhost -Database AxDB -Query "select * from InventDimFieldBinding where CLASSNAME = 'InventProductDimensionFlavor'"
 if ($InventDimFieldBindingFlavor -ne $null)
 {
     Write-Host "..Cleaning up InventDimFieldBinding table" -ForegroundColor Yellow
-    Invoke-DbaQuery -SqlInstance localhost -Database AxDB -Query "delete from InventDimFieldBinding" 
+    Invoke-DbaQuery -SqlInstance localhost -Database AxDB -Query "delete from InventDimFieldBinding"
 }
 #endregion Check and Clean up InventDimFieldBinding Table -->
 
@@ -136,20 +146,19 @@ if ($InventDimFieldBindingFlavor -ne $null)
 $scriptPath = 'C:\Scripts'
 $scriptName = 'Optimize-AxDB.ps1'
 
-If (Test-Path “HKLM:\Software\Microsoft\Microsoft SQL Server\Instance Names\SQL”) {
-    Write-Host “Installing Ola Hallengren's SQL Maintenance scripts”
+If (Test-Path "HKLM:\Software\Microsoft\Microsoft SQL Server\Instance Names\SQL") {
+    Write-Host "Installing Ola Hallengren's SQL Maintenance scripts"
     Import-Module -Name dbatools
     Install-DbaMaintenanceSolution -SqlInstance . -Database master
-    Write-Host “Running Ola Hallengren's IndexOptimize tool”
+    Write-Host "Running Ola Hallengren's IndexOptimize tool"
 } Else {
-    Write-Verbose “SQL not installed.  Skipped Ola Hallengren's index optimization”
+    Write-Verbose "SQL not installed.  Skipped Ola Hallengren's index optimization"
 }
 
 Write-Host "Saving Script..." -ForegroundColor Yellow
 $script = @'
 #region run Ola Hallengren's IndexOptimize
 If (Test-Path “HKLM:\Software\Microsoft\Microsoft SQL Server\Instance Names\SQL”) {
- 
     # http://calafell.me/defragment-indexes-on-d365-finance-operations-virtual-machine/
     $sql = "EXECUTE master.dbo.IndexOptimize
         @Databases = 'ALL_DATABASES',
@@ -162,10 +171,9 @@ If (Test-Path “HKLM:\Software\Microsoft\Microsoft SQL Server\Instance Names\SQ
         @UpdateStatistics = 'ALL',
         @OnlyModifiedStatistics = 'Y',
         @MaxDOP = 0"
- 
     Invoke-DbaQuery -SqlInstance localhost -Database AxDB -Query $sql
 } Else {
-    Write-Verbose “SQL not installed.  Skipped Ola Hallengren's index optimization”
+    Write-Verbose "SQL not installed.  Skipped Ola Hallengren's index optimization"
 }
 #endregion
 '@
@@ -174,23 +182,23 @@ $scriptFullPath = Join-Path $scriptPath $scriptName
 
 New-Item -Path $scriptPath -ItemType Directory -Force
 Set-Content -Value $script -Path $scriptFullPath -Force
- 
+
 #Write-Host "Running Script for the first time..." -ForegroundColor Yellow
 #Invoke-Expression $scriptFullPath
 
 Write-Host "Registering the Script as Scheduled Task..." -ForegroundColor Yellow
 #$atStartUp = New-JobTrigger -AtStartup -RandomDelay 00:40:00
 $atStartUp =  New-JobTrigger -Daily -At "3:07 AM" -DaysInterval 1 -RandomDelay 00:40:00
-$option = New-ScheduledJobOption -StartIfIdle -MultipleInstancePolicy IgnoreNew 
-Register-ScheduledJob -Name AXDBOptimizeStartupTask -Trigger $atStartUp -FilePath $scriptFullPath -ScheduledJobOption $option 
-#Unregister-ScheduledJob -Name AXDBOptimizeStartupTask   
+$option = New-ScheduledJobOption -StartIfIdle -MultipleInstancePolicy IgnoreNew
+Register-ScheduledJob -Name AXDBOptimizeStartupTask -Trigger $atStartUp -FilePath $scriptFullPath -ScheduledJobOption $option
+#Unregister-ScheduledJob -Name AXDBOptimizeStartupTask
 #endregion Schedule script to Optimize Indexes on Databases -->
 
 #region Downloading Chrome browser <--
-$Path = $env:TEMP; 
-$Installer = "chrome_installer.exe"; 
+$Path = $env:TEMP;
+$Installer = "chrome_installer.exe";
 Invoke-WebRequest 'https://dl.google.com/chrome/install/latest/chrome_installer.exe' -Outfile $Path\$Installer;
-Start-Process -FilePath $Path\$Installer -Args "/silent /install" -Verb RunAs -Wait; 
+Start-Process -FilePath $Path\$Installer -Args "/silent /install" -Verb RunAs -Wait;
 Remove-Item $Path\$Installer
 #endregion Downloading Chrome browser -->
 
@@ -237,11 +245,11 @@ Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search
 #endregion Start Menu: Disable Cortana -->
 
 #region Workflow error. An error occurred while the HTTP request <--
-#This could be due to the fact that the server certificate is not configured properly with HTTP.sys in the https case. 
+#This could be due to the fact that the server certificate is not configured properly with HTTP.sys in the https case.
 #this could also be caused by the mismatch of the security binding between the client and the server
 # https://sdhruva.wordpress.com/2019/11/22/dynamics-365-fo-workflow-error/
 Set-ItemProperty HKLM:\SOFTWARE\Microsoft\.NETFramework\v4.0.30319 -Name SchUseStrongCrypto -Value 1 -Type dword -Force -Confirm:$false
-if ((Test-Path HKLM:\SOFTWARE\Wow6432Node\Microsoft\.NETFramework\v4.0.30319)) { 
+if ((Test-Path HKLM:\SOFTWARE\Wow6432Node\Microsoft\.NETFramework\v4.0.30319)) {
     Set-ItemProperty HKLM:\SOFTWARE\Wow6432Node\Microsoft\.NETFramework\v4.0.30319 -Name SchUseStrongCrypto -Value 1 -Type dword -Force -Confirm:$false
 }
 #endregion Workflow error. An error occurred while the HTTP request -->
@@ -252,4 +260,4 @@ powercfg.exe /SetActive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
 #endregion Set power settings to High Performance -->
 
 #Rename and restart
-Rename-Computer -NewName $NewComputerName -Restart   
+Rename-Computer -NewName $NewComputerName -Restart
