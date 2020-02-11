@@ -259,5 +259,10 @@ Write-Host "Setting power settings to High Performance" -ForegroundColor Yellow
 powercfg.exe /SetActive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
 #endregion Set power settings to High Performance -->
 
+#region Stop and Disable Management Reporter Service (Optional) <--
+Stop-Service -Name MR2012ProcessService -Force
+Set-Service -Name MR2012ProcessService -StartupType Disabled
+#endregion Stop and Disable Management Reporter Service -->
+
 #Rename and restart
 Rename-Computer -NewName $NewComputerName -Restart
