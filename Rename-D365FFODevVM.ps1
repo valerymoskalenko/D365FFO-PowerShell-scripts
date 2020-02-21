@@ -155,7 +155,7 @@ If (Test-Path "HKLM:\Software\Microsoft\Microsoft SQL Server\Instance Names\SQL"
     Write-Verbose "SQL not installed.  Skipped Ola Hallengren's index optimization"
 }
 
-Write-Host "Saving Script..." -ForegroundColor Yellow
+Write-Host "Saving Optimize-AxDB Script..." -ForegroundColor Yellow
 $script = @'
 #region run Ola Hallengren's IndexOptimize
 If (Test-Path "HKLM:\Software\Microsoft\Microsoft SQL Server\Instance Names\SQL") {
@@ -183,10 +183,10 @@ $scriptFullPath = Join-Path $scriptPath $scriptName
 New-Item -Path $scriptPath -ItemType Directory -Force
 Set-Content -Value $script -Path $scriptFullPath -Force
 
-#Write-Host "Running Script for the first time..." -ForegroundColor Yellow
+#Write-Host "Running Optimize-AxDB Script for the first time..." -ForegroundColor Yellow
 #Invoke-Expression $scriptFullPath
 
-Write-Host "Registering the Script as Scheduled Task..." -ForegroundColor Yellow
+Write-Host "Registering the Optimize-AxDB Script as Scheduled Task..." -ForegroundColor Yellow
 #$atStartUp = New-JobTrigger -AtStartup -RandomDelay 00:40:00
 $atStartUp =  New-JobTrigger -Daily -At "3:07 AM" -DaysInterval 1 -RandomDelay 00:40:00
 $option = New-ScheduledJobOption -StartIfIdle -MultipleInstancePolicy IgnoreNew
@@ -255,8 +255,10 @@ if ((Test-Path HKLM:\SOFTWARE\Wow6432Node\Microsoft\.NETFramework\v4.0.30319)) {
 #endregion Workflow error. An error occurred while the HTTP request -->
 
 #region Set power settings to High Performance <--
-Write-Host "Setting power settings to High Performance" -ForegroundColor Yellow
+Write-Host "Changing power plan to High Performance and setting display timeout to never" -ForegroundColor Yellow
 powercfg.exe /SetActive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
+powercfg.exe -CHANGE -monitor-timeout-dc 0
+powercfg.exe -CHANGE -monitor-timeout-ac 0
 #endregion Set power settings to High Performance -->
 
 #region Stop and Disable Management Reporter Service (Optional) <--
