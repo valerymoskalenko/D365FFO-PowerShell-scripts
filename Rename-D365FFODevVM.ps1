@@ -11,7 +11,7 @@
 if ($null -eq $newComputerName)
 {
     Write-Error "Computer name '$newComputerName' is empty."
-    Write-Host "Please update computer name. And repeat the script" -ForegroundColor Red
+    Write-Host 'Please update new computer name variable $NewComputerName. And repeat the script' -BackgroundColor Red
     break;
 }
 Write-Host "New computer name is $NewComputerName" -ForegroundColor Green
