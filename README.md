@@ -1,9 +1,10 @@
-# D365FFO-RenameDevVM
+# Rename-D365FFODevVM
 Rename and adjust some settings new Dev VM (D365FFO, VHD-based VM)
 Please find how-to use example below
 ```
 Set-ExecutionPolicy Bypass -Scope Process -Force; 
 $NewComputerName = 'FC-Val10PU24'
+$disableMR = $true #Stop and Disable Management Reporter
 iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/valerymoskalenko/D365FFO-PowerShell-scripts/master/Rename-D365FFODevVM.ps1'))
 ```
 # Rotate-D365FFODevVMCertificates.ps1
