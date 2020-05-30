@@ -1,13 +1,15 @@
 #Default computer name
 #https://github.com/valerymoskalenko/D365FFO-PowerShell-scripts/edit/master/Rename-D365FFODevVM.ps1
 #region Fast execution <--
-#Set-ExecutionPolicy Bypass -Scope Process -Force; 
+#Set-ExecutionPolicy Bypass -Scope Process -Force;
 #$NewComputerName = 'FC-Val10PU24'
+#$diableMR = $true #Stop and Disable Management Reporter
 #iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/valerymoskalenko/D365FFO-PowerShell-scripts/master/Rename-D365FFODevVM.ps1'))
 #endregion Fast execution -->
 
 #region Define New Computer name <--
 #$NewComputerName = 'FC-Val10PU24'
+Write-Host "Define New Computer name" $newComputerName -ForegroundColor Yellow
 if ($null -eq $newComputerName)
 {
     Write-Error "Computer name '$newComputerName' is empty."
@@ -33,6 +35,7 @@ elseif(($NewComputerName.Length -gt 15) -or ($NewComputerName.Length -le 1))
 #endregion Define New Computer name -->
 
 #region Disable IE Enhanced Security Configuration <--
+Write-Host "Disable IE Enhanced Security Configuration" -ForegroundColor Yellow
 function Disable-IEESC
 {
     $AdminKey = "HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A7-37EF-4b3f-8CFC-4F3A74704073}"
@@ -46,6 +49,7 @@ Disable-IEESC
 #endregion Disable IE Enhanced Security Configuration -->
 
 #region Disable UAC <--
+Write-Host "Disable UAC" -ForegroundColor Yellow
 Write-Verbose( "Disable UAC") -Verbose  # More details here https://www.powershellgallery.com/packages/cEPRSDisableUAC
 & "$env:SystemRoot\System32\reg.exe" ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v ConsentPromptBehaviorAdmin /t REG_DWORD /d 4 /f
 & "$env:SystemRoot\System32\reg.exe" ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v EnableInstallerDetection /t REG_DWORD /d 1 /f
@@ -54,22 +58,12 @@ gpupdate
 #endregion Disable UAC -->
 
 #region password age pop up <--
+Write-Host "Prevent password age pop up" -ForegroundColor Yellow
 net accounts /maxpwage:unlimited
 #endregion password age pop up -->
 
-#region Configure Windows Defender <--
-Import-Module Defender
-Add-MpPreference -ExclusionExtension '*.mdf', '*.ldf', '*.xml', '*.rdl', '*.md'
-Add-MpPreference -ExclusionPath 'C:\ProgramData\sf'
-Add-MpPreference -ExclusionPath 'C:\Program Files\Microsoft Service Fabric\bin'
-Add-MpPreference -ExclusionPath 'C:\AosService\PackagesLocalDirectory\Bin','K:\AosService\PackagesLocalDirectory\Bin'
-Add-MpPreference -ExclusionProcess @('Fabric.exe','FabricHost.exe','FabricInstallerService.exe','FabricSetup.exe','FabricDeployer.exe',
-    'ImageBuilder.exe','FabricGateway.exe','FabricDCA.exe','FabricFAS.exe','FabricUOS.exe','FabricRM.exe','FileStoreService.exe')
-Add-MpPreference -ExclusionProcess @('sqlservr.exe','pgc.exe','labelC.exe','xppc.exe','SyncEngine.exe','xppcAgent.exe','ReportingServicesService.exe','iisexpress.exe')
-Add-MpPreference -ExclusionPath 'C:\Program Files\Microsoft SQL Server\MSSQL13.MSSQLSERVER\MSSQL\Binn'
-#endregion Configure Windows Defender -->
-
 #region Installing d365fo.tools and dbatools <--
+Write-Host "Installing d365fo.tools and dbatools PowerShell modules" -ForegroundColor Yellow
 # This is requried by Find-Module, by doing it beforehand we remove some warning messages
 Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope AllUsers
 Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
@@ -79,14 +73,36 @@ Install-Module -Name d365fo.tools -SkipPublisherCheck -Scope AllUsers
 Install-Module -Name dbatools -SkipPublisherCheck -Scope AllUsers
 #endregion Installing d365fo.tools and dbatools -->
 
+#region Configure Windows Defender <--
+Write-Host "Configure Windows Defender" -ForegroundColor Yellow
+Import-Module Defender
+Add-MpPreference -ExclusionExtension '*.mdf', '*.ldf', '*.xml', '*.rdl', '*.md'
+Add-MpPreference -ExclusionPath 'C:\ProgramData\sf'
+Add-MpPreference -ExclusionPath 'C:\Program Files\Microsoft Service Fabric\bin'
+Add-MpPreference -ExclusionPath 'C:\AosService\PackagesLocalDirectory\Bin','K:\AosService\PackagesLocalDirectory\Bin'
+Add-MpPreference -ExclusionProcess @('Fabric.exe','FabricHost.exe','FabricInstallerService.exe','FabricSetup.exe','FabricDeployer.exe',
+    'ImageBuilder.exe','FabricGateway.exe','FabricDCA.exe','FabricFAS.exe','FabricUOS.exe','FabricRM.exe','FileStoreService.exe')
+Add-MpPreference -ExclusionProcess @('sqlservr.exe','pgc.exe','labelC.exe','xppc.exe','SyncEngine.exe','xppcAgent.exe','ReportingServicesService.exe','iisexpress.exe')
+Add-MpPreference -ExclusionPath 'C:\Program Files\Microsoft SQL Server\MSSQL13.MSSQLSERVER\MSSQL\Binn'
+Add-D365WindowsDefenderRules
+#endregion Configure Windows Defender -->
+
 #region SQL Server settings <--
+Write-Host "SQL Server settings" -ForegroundColor Yellow
+$compMaxRAM = [Math]::Round((Get-WmiObject -Class win32_computersystem -ComputerName localhost).TotalPhysicalMemory/1Mb)
+$compSQLMaxRAM = [Math]::Round($compMaxRAM / 4)
+$compSQLMaxRAM = if ($compSQLMaxRAM -ge 8200) {8192} else {$compSQLMaxRAM} #Max SQL should not be more than 8192 MB of RAM
+$compSQLMinRAM = [Math]::Round($compMaxRAM / 8)
+$compSQLMinRAM = if ($compSQLMinRAM -le 1000) {1024} else {$compSQLMinRAM} #Just 1024 MB of RAM should be enough as minimum everywhere
+Write-Host ".. SQL Max RAM" $compSQLMaxRAM "SQL Min RAM" $compSQLMinRAM -ForegroundColor Gray
+
 $newName = $NewComputerName
 $oldName= Invoke-Sqlcmd -Query "select @@servername as Name"
 Write-Host "Old sql name is" $oldName.Name -ForegroundColor Yellow
 $SQLSCript = @"
 EXEC sys.sp_configure N'show advanced options', N'1'  RECONFIGURE WITH OVERRIDE
-EXEC sys.sp_configure N'min server memory (MB)', N'2048'
-EXEC sys.sp_configure N'max server memory (MB)', N'8192'
+EXEC sys.sp_configure N'min server memory (MB)', N'$compSQLMinRAM'
+EXEC sys.sp_configure N'max server memory (MB)', N'$compSQLMaxRAM'
 EXEC sys.sp_configure N'backup compression default', N'1'
 EXEC sys.sp_configure N'cost threshold for parallelism', N'50'
 EXEC sys.sp_configure N'max degree of parallelism', N'1'
@@ -105,6 +121,7 @@ Invoke-DbaQuery -SqlInstance localhost -Database AxDB -Query $SQLSCript
 #endregion SQL Server settings -->
 
 #region Disable Windows Updates <--
+Write-Host "Disable Windows Updates" -ForegroundColor Yellow
 $WindowsUpdatePath = "HKLM:SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\"
 $AutoUpdatePath = "HKLM:SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU"
 If(Test-Path -Path $WindowsUpdatePath) {
@@ -123,6 +140,7 @@ Write-Host "All Windows Updates were disabled" -ForegroundColor Green
 #endregion Disable Windows Updates -->
 
 #region Update hosts file <--
+Write-Host "Update hosts file" -ForegroundColor Yellow
 $fileHosts = "$env:windir\System32\drivers\etc\hosts"
 "127.0.0.1 $($env:COMPUTERNAME)" | Add-Content -PassThru $fileHosts
 "127.0.0.1 $NewComputerName" | Add-Content -PassThru $fileHosts
@@ -143,6 +161,7 @@ if ($InventDimFieldBindingFlavor -ne $null)
 #endregion Check and Clean up InventDimFieldBinding Table -->
 
 #region Schedule script to Optimize Indexes on Databases <--
+Write-Host "Schedule script to Optimize Indexes on Databases" -ForegroundColor Yellow
 $scriptPath = 'C:\Scripts'
 $scriptName = 'Optimize-AxDB.ps1'
 
@@ -195,6 +214,7 @@ Register-ScheduledJob -Name AXDBOptimizeStartupTask -Trigger $atStartUp -FilePat
 #endregion Schedule script to Optimize Indexes on Databases -->
 
 #region Downloading Chrome browser <--
+Write-Host "Downloading Chrome browser" -ForegroundColor Yellow
 $Path = $env:TEMP;
 $Installer = "chrome_installer.exe";
 Invoke-WebRequest 'https://dl.google.com/chrome/install/latest/chrome_installer.exe' -Outfile $Path\$Installer;
@@ -203,6 +223,7 @@ Remove-Item $Path\$Installer
 #endregion Downloading Chrome browser -->
 
 #region Fix Trace Parser <--
+Write-Host "Fix Trace Parser" -ForegroundColor Yellow
 #https://sinedax.blogspot.com/2018/12/trace-parser-doesnt-work-dynamics-365.html
 $resourcefiledir = "C:\AOSService\webroot"
 $inputmanfile = "C:\AOSService\webroot\Monitoring\DynamicsAXExecutionTraces.man"
@@ -220,11 +241,13 @@ wevtutil im $outputmanfile
 #endregion Fix Trace Parser -->
 
 #region Disable Telemetry (requires a reboot to take effect) <--
+Write-Host "Disable Telemetry" -ForegroundColor Yellow
 Set-ItemProperty -Path HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection -Name AllowTelemetry -Type DWord -Value 0
 Get-Service DiagTrack,Dmwappushservice | Stop-Service | Set-Service -StartupType Disabled
 #endregion Disable Telemetry -->
 
 #region Start Menu: Disable Cortana <--
+Write-Host "Start Menu: Disable Cortana" -ForegroundColor Yellow
 If (!(Test-Path "HKCU:\SOFTWARE\Microsoft\Personalization\Settings")) {
 	New-Item -Path "HKCU:\SOFTWARE\Microsoft\Personalization\Settings" -Force | Out-Null
 }
@@ -244,7 +267,8 @@ If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search")) {
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" -Name "AllowCortana" -Type DWord -Value 0
 #endregion Start Menu: Disable Cortana -->
 
-#region Workflow error. An error occurred while the HTTP request <--
+#region Fix Workflow error. An error occurred while the HTTP request <--
+Write-Host "Fix Workflow error. An error occurred while the HTTP request" -ForegroundColor Yellow
 #This could be due to the fact that the server certificate is not configured properly with HTTP.sys in the https case.
 #this could also be caused by the mismatch of the security binding between the client and the server
 # https://sdhruva.wordpress.com/2019/11/22/dynamics-365-fo-workflow-error/
@@ -262,9 +286,16 @@ powercfg.exe -CHANGE -monitor-timeout-ac 0
 #endregion Set power settings to High Performance -->
 
 #region Stop and Disable Management Reporter Service (Optional) <--
-Stop-Service -Name MR2012ProcessService -Force
-Set-Service -Name MR2012ProcessService -StartupType Disabled
+Write-Host "Stop and Disable Management Reporter Service (Optional)" -ForegroundColor Yellow
+if ($diableMR) {
+    Write-Host "..Stopping and Disabling Management Reporter Service" -ForegroundColor Yellow
+    Stop-Service -Name MR2012ProcessService -Force
+    Set-Service -Name MR2012ProcessService -StartupType Disabled
+} else {
+    Write-Host "..Skipping Disabling Management Reporter Service" -ForegroundColor Yellow
+}
 #endregion Stop and Disable Management Reporter Service -->
 
 #Rename and restart
+Write-Host "Rename and restart" -ForegroundColor Yellow
 Rename-Computer -NewName $NewComputerName -Restart
