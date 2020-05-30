@@ -3,7 +3,7 @@
 #region Fast execution <--
 #Set-ExecutionPolicy Bypass -Scope Process -Force;
 #$NewComputerName = 'FC-Val10PU24'
-#$diableMR = $true #Stop and Disable Management Reporter
+#$disableMR = $true #Stop and Disable Management Reporter
 #iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/valerymoskalenko/D365FFO-PowerShell-scripts/master/Rename-D365FFODevVM.ps1'))
 #endregion Fast execution -->
 
@@ -287,7 +287,7 @@ powercfg.exe -CHANGE -monitor-timeout-ac 0
 
 #region Stop and Disable Management Reporter Service (Optional) <--
 Write-Host "Stop and Disable Management Reporter Service (Optional)" -ForegroundColor Yellow
-if ($diableMR) {
+if ($disableMR) {
     Write-Host "..Stopping and Disabling Management Reporter Service" -ForegroundColor Yellow
     Stop-Service -Name MR2012ProcessService -Force
     Set-Service -Name MR2012ProcessService -StartupType Disabled
