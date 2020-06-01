@@ -7,6 +7,8 @@
 #iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/valerymoskalenko/D365FFO-PowerShell-scripts/master/Rename-D365FFODevVM.ps1'))
 #endregion Fast execution -->
 
+$ErrorActionPreference = "Stop" #Stop on any error
+
 #region Define New Computer name <--
 #$NewComputerName = 'FC-Val10PU24'
 Write-Host "Define New Computer name" $newComputerName -ForegroundColor Yellow
