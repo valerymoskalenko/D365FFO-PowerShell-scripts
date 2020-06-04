@@ -25,7 +25,11 @@ Please find details here https://www.yammer.com/dynamicsaxfeedbackprograms/#/Thr
 
 # Invoke-D365FFOAxDBOptimization.ps1
 Create a Scheduled task.
-That executes OLA Index Optimization for all databases every day at 3:07 am
+That executes OLA Index Optimization for all databases every day at 3:07 am and at every VM startup
+
+# Invoke-D365FFOAxDBAutomaticBackup.ps1
+Create a Scheduled task.
+That executes AxDB backup and upload it to Azure Blob Storage every day at 8:07 am
 
 # Test-D365FOLabelsFromCheckins.ps1
 Find missing labels between Latest checked-in Label file and all versions of the same Label file.
