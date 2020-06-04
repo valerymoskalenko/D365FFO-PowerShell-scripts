@@ -1,3 +1,4 @@
+# https://github.com/valerymoskalenko/D365FFO-PowerShell-scripts/blob/master/Invoke-D365FFOAxDBOptimization.ps1
 #region Schedule script to Optimize Indexes on Databases -->
 $scriptPath = 'C:\Scripts'
 $scriptName = 'Optimize-AxDB.ps1'
