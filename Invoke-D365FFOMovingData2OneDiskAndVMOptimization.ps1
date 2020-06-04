@@ -1,3 +1,4 @@
+# https://github.com/valerymoskalenko/D365FFO-PowerShell-scripts/blob/master/Invoke-D365FFOMovingData2OneDiskAndVMOptimization.ps1
 $ErrorActionPreference = "Stop"
 #region Installing d365fo.tools and dbatools <--
 # This is requried by Find-Module, by doing it beforehand we remove some warning messages
