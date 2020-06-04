@@ -1,3 +1,4 @@
+# https://github.com/valerymoskalenko/D365FFO-PowerShell-scripts/blob/master/Invoke-D365FFOAxDBAutomaticBackup.ps1
 $scriptPath = 'C:\Scripts'
 $scriptName = 'Backup-AxDB.ps1'
 
