@@ -1,19 +1,19 @@
 # https://github.com/valerymoskalenko/D365FFO-PowerShell-scripts/blob/master/Invoke-D365FFOMovingData2OneDiskAndVMOptimization.ps1
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = 'Stop'
 #region Installing d365fo.tools and dbatools <--
 # This is requried by Find-Module, by doing it beforehand we remove some warning messages
-Write-Host "Installing PowerShell modules d365fo.tools and dbatools" -ForegroundColor Yellow
+Write-Host 'Installing PowerShell modules d365fo.tools and dbatools' -ForegroundColor Yellow
 Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope AllUsers
 Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
 $modules2Install = @('d365fo.tools','dbatools','RobocopyPS','Carbon')
 foreach($module in  $modules2Install)
 {
-    Write-Host "..working on module" $module -ForegroundColor Yellow
+    Write-Host '..working on module' $module -ForegroundColor Yellow
     if ($null -eq $(Get-Command -Module $module)) {
-        Write-Host "....installing module" $module -ForegroundColor Gray
+        Write-Host '....installing module' $module -ForegroundColor Gray
         Install-Module -Name $module -SkipPublisherCheck -Scope AllUsers
     } else {
-        Write-Host "....updating module" $module -ForegroundColor Gray
+        Write-Host '....updating module' $module -ForegroundColor Gray
         Update-Module -Name $module
     }
 }
@@ -33,7 +33,7 @@ $local_disks = Get-Disk | where {$_.PartitionStyle -eq 'RAW'}
 foreach($local_disk in $local_disks)
 {
     [string]$diskP_SSDDiskLetterOnly = $diskP_SSDDisk.Replace(':','')
-    Write-Host "Formatting drive" $diskP_SSDDiskLetterOnly -ForegroundColor Yellow
+    Write-Host 'Formatting drive' $diskP_SSDDiskLetterOnly -ForegroundColor Yellow
     $local_disk | Initialize-Disk -PartitionStyle MBR -PassThru | New-Partition -DriveLetter $diskP_SSDDiskLetterOnly -UseMaximumSize -Alignment $(4*1024) | Format-Volume -FileSystem NTFS -NewFileSystemLabel $DriveLabel -AllocationUnitSize $(4*1024) -Confirm:$false
     #$local_disk | New-Partition -DriveLetter $diskP_SSDDiskLetterOnly -UseMaximumSize -Alignment $(4*1024) | Format-Volume -FileSystem NTFS -NewFileSystemLabel $DriveLabel -AllocationUnitSize $(4*1024) -Confirm:$false
 }
@@ -45,28 +45,28 @@ Import-Module -Name Carbon
 $sServiceName = 'MSSQLSERVER'  #MS SQL Service name
 $mssql = Get-WmiObject -Query "SELECT * FROM Win32_Service WHERE Name = '$sServiceName'"
 [string]$mssqlServiceUser = $($mssql.StartName)
-Write-Host "Adding" $mssqlServiceUser "service account to local Administrators group" -ForegroundColor Yellow
-Add-LocalGroupMember -Group "Administrators" -Member $mssqlServiceUser
-Get-LocalGroupMember -Group "Administrators"
+Write-Host 'Adding' $mssqlServiceUser 'service account to local Administrators group' -ForegroundColor Yellow
+Add-LocalGroupMember -Group 'Administrators' -Member $mssqlServiceUser
+Get-LocalGroupMember -Group 'Administrators' | FT
 Grant-Privilege -Identity $mssqlServiceUser -Privilege SeImpersonatePrivilege -Verbose
 Grant-Privilege -Identity $mssqlServiceUser -Privilege SeLockMemoryPrivilege -Verbose
 Grant-Privilege -Identity $mssqlServiceUser -Privilege SeManageVolumePrivilege -Verbose
 #endregion Adding sql service account to the local Administrator group -->
 
 #region Shutdown D365FO and Apply Defender rules <--
-Write-Host "Stopping D365FO" -ForegroundColor Yellow
+Write-Host 'Stopping D365FO' -ForegroundColor Yellow
 Stop-D365Environment -All
 Add-D365WindowsDefenderRules  #Add Defender Rules to improve performance
 #endregion Shutdown D365FO and Apply Defender rules -->
 
 #region General SQL Server settings <--
-Write-Host "SQL Server settings" -ForegroundColor Yellow
+Write-Host 'SQL Server settings' -ForegroundColor Yellow
 $compMaxRAM = [Math]::Round((Get-WmiObject -Class win32_computersystem -ComputerName localhost).TotalPhysicalMemory/1Mb)
 $compSQLMaxRAM = [Math]::Round($compMaxRAM / 8)
 $compSQLMaxRAM = if ($compSQLMaxRAM -ge 8200) {8192} else {$compSQLMaxRAM} #Max SQL should not be more than 8192 MB of RAM
 $compSQLMinRAM = [Math]::Round($compMaxRAM / 16)
 $compSQLMinRAM = if ($compSQLMinRAM -le 1000) {1024} else {$compSQLMinRAM} #Just 1024 MB of RAM should be enough as minimum everywhere
-Write-Host ".. SQL Max RAM" $compSQLMaxRAM "SQL Min RAM" $compSQLMinRAM -ForegroundColor Gray
+Write-Host '.. SQL Max RAM' $compSQLMaxRAM 'SQL Min RAM' $compSQLMinRAM -ForegroundColor Gray
 $SQLSCript = @"
 EXEC sys.sp_configure N'show advanced options', N'1'  RECONFIGURE WITH OVERRIDE
 EXEC sys.sp_configure N'min server memory (MB)', N'$compSQLMinRAM'
@@ -84,8 +84,8 @@ Invoke-DbaQuery -SqlInstance localhost -Database AxDB -Query $SQLSCript
 
 #region Move SQL TempDB to disk D:\ <--
 #$computerName = $env:COMPUTERNAME.Remove($env:COMPUTERNAME.LastIndexOf('-') ,$env:COMPUTERNAME.Length - $env:COMPUTERNAME.LastIndexOf('-') )
-Write-Host "SQL Performance Optimization: Moving TempDB to Temp Drive D:\" -ForegroundColor Yellow
-$SQLScriptMoveTempDB = @"
+Write-Host 'SQL Performance Optimization: Moving TempDB to Temp Drive D:\' -ForegroundColor Yellow
+$SQLScriptMoveTempDB = @'
 /* Re-sizing TempDB to 8 GB */
     USE [master];
     GO
@@ -99,14 +99,14 @@ $SQLScriptMoveTempDB = @"
     ALTER DATABASE tempdb MODIFY FILE (NAME = N'tempdev7', FILENAME = 'D:\d365fo_tempdb7.mdf',size = 2GB, FILEGROWTH = 512MB);
     ALTER DATABASE tempdb MODIFY FILE (NAME = N'tempdev8', FILENAME = 'D:\d365fo_tempdb8.mdf',size = 2GB, FILEGROWTH = 512MB);
 GO
-"@
+'@
 Invoke-DbaQuery -SqlInstance localhost -Database master -Query $SQLScriptMoveTempDB
 #endregion Move SQL TempDB to disk D:\ -->
 
 #region SQL Databases optimization: Set grow step and Execute DB Shrink -->
 #Import SQL PowerShell module
 Import-Module SQLPS –DisableNameChecking
-Write-Host "SQL Performance optimization: Set growing factor to 64MByte" -ForegroundColor Yellow
+Write-Host 'SQL Performance optimization: Set growing factor to 64MByte' -ForegroundColor Yellow
 foreach($database in @('AxDB','AxDW','DynamicsAxReportServer','DynamicsAxReportServerTempDB','DYNAMICSXREFDB','FinancialReportingDb'))
 {
     $SQLDatabase = Get-SqlDatabase -Name $database -ServerInstance localhost
@@ -116,10 +116,10 @@ foreach($database in @('AxDB','AxDW','DynamicsAxReportServer','DynamicsAxReportS
     {
         ForEach ($File in $FileGroup.Files)
         {
-            $File.GrowthType = "KB"
-            $File.Growth = "65536" #64MB
-            #$File.MaxSize = "-1" #Unlimited
-            #$File.Size = "5242880" #5GB
+            $File.GrowthType = 'KB'
+            $File.Growth = '65536' #64MB
+            #$File.MaxSize = '-1' #Unlimited
+            #$File.Size = '5242880' #5GB
             $File.Alter()
         }
     }
@@ -127,20 +127,20 @@ foreach($database in @('AxDB','AxDW','DynamicsAxReportServer','DynamicsAxReportS
     Foreach($LogFile in $SQLDatabase.LogFiles)
     {
         $LogFile.GrowthType = [Microsoft.SqlServer.Management.Smo.FileGrowthType]::KB
-        $LogFile.Growth = "65536"  #64MB
-        #$LogFile.Size = "2097152" #2GB
-        #$LogFile.MaxSize = "-1" #Unlimited
+        $LogFile.Growth = '65536'  #64MB
+        #$LogFile.Size = '2097152' #2GB
+        #$LogFile.MaxSize = '-1' #Unlimited
         $LogFile.Alter()
     }
 #Read more: https://www.sharepointdiary.com/2017/06/change-sql-server-database-initial-size-auto-growth-settings-using-powershell.html#ixzz6LZFf2mHH
 }
-Write-Host "SQL Performance optimization: Shrink all user Databases" -ForegroundColor Yellow
+Write-Host 'SQL Performance optimization: Shrink all user Databases' -ForegroundColor Yellow
 Invoke-DbaDbShrink -SqlInstance localhost -AllUserDatabases -Verbose
 #endregion SQL Databases optimization: Set grow step and Execute DB Shrink <--
 
 #region Detach all D365FO SQL Databases <--
-Write-Host "Detaching all D365FO Databases" -ForegroundColor Yellow
-$SQLScriptDetachAllDB = @"
+Write-Host 'Detaching all D365FO Databases' -ForegroundColor Yellow
+$SQLScriptDetachAllDB = @'
     USE [master]
     ALTER DATABASE [AxDB] SET  SINGLE_USER WITH ROLLBACK IMMEDIATE
     EXEC master.dbo.sp_detach_db @dbname = N'AxDB'
@@ -160,7 +160,7 @@ $SQLScriptDetachAllDB = @"
     ALTER DATABASE [FinancialReportingDb] SET  SINGLE_USER WITH ROLLBACK IMMEDIATE
     EXEC master.dbo.sp_detach_db @dbname = N'FinancialReportingDb'
     GO
-"@
+'@
 Invoke-DbaQuery -SqlInstance localhost -Database master -Query $SQLScriptDetachAllDB
 #endregion Shutdown D365FO and Detach all D365FO SQL Databases -->
 
@@ -245,9 +245,9 @@ Write-Host 'Update Default paths in SQL Server' -ForegroundColor Yellow
 Get-Service -Name MSSQLSERVER | Start-Service
 #Add-Type -AssemblyName 'Microsoft.SqlServer.Smo, Version=10.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91'
 $server = New-Object Microsoft.SqlServer.Management.Smo.Server($env:ComputerName)
-$server.Properties["BackupDirectory"].Value = $newTarget_MSSQLBackup
-$server.Properties["DefaultFile"].Value = $newTarget_MSSQLData
-$server.Properties["DefaultLog"].Value = $newTarget_MSSQLLogs
+$server.Properties['BackupDirectory'].Value = $newTarget_MSSQLBackup
+$server.Properties['DefaultFile'].Value = $newTarget_MSSQLData
+$server.Properties['DefaultLog'].Value = $newTarget_MSSQLLogs
 $server.Alter()
 #endregion Update Default paths in SQL Server <--
 
