@@ -39,20 +39,7 @@ Optimization for LCS-controlled Azure VM (Tier 1 only)
    - Set it Premium SSD, Managed
 - Wait for deployment completion
 - Add new Premium SSD to your LCS Azure VM
-- Execute this script. 
-
-```
-Set-ExecutionPolicy Bypass -Scope Process -Force; 
-$diskK_ServiceVolume = 'K:'
-$diskG_MSSQLData = 'G:'
-$diskH_MSSQLLogs = 'H:'
-$diskI_MSSQLTempDB = 'I:' #JFI, We are going to skip this folder. It will be restored automatically by MSSQL in disk D:\
-$diskJ_MSSQLBackup = 'J:'
-$diskP_SSDDisk = 'P:'  #Target disk
-
-iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/valerymoskalenko/D365FFO-PowerShell-scripts/master/Invoke-D365FFOMovingData2OneDiskAndVMOptimization.ps1'))
-```
-
+- Open remote desktop conneciton and execute this PowerShell script. 
    This script do the following
      - Detact new disk. Init and format it.
      - Add SQL service account to Administrators group and update Local Policy
