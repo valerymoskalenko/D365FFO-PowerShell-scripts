@@ -19,14 +19,14 @@ foreach($module in  $modules2Install)
 }
 #endregion Installing d365fo.tools and dbatools -->
 
-#region Variables to configure or check <--
-$diskK_ServiceVolume = 'K:'
-$diskG_MSSQLData = 'G:'
-$diskH_MSSQLLogs = 'H:'
-$diskI_MSSQLTempDB = 'I:' #JFI, We are going to skip this folder. It will be restored automatically by MSSQL in disk D:\
-$diskJ_MSSQLBackup = 'J:'
-$diskP_SSDDisk = 'P:'  #Target disk
-#endregion Variables to configure or check -->
+#region Default values for Variables<--
+if ($null -eq $diskK_ServiceVolume) {$diskK_ServiceVolume = 'K:'}
+if ($null -eq $diskG_MSSQLData) {$diskG_MSSQLData = 'G:'}
+if ($null -eq $diskH_MSSQLLogs) {$diskH_MSSQLLogs = 'H:'}
+if ($null -eq $diskI_MSSQLTempDB) {$diskI_MSSQLTempDB = 'I:'} #JFI, We are going to skip this folder. It will be restored automatically by MSSQL in disk D:\
+if ($null -eq $diskJ_MSSQLBackup) {$diskJ_MSSQLBackup = 'J:'}
+if ($null -eq $diskP_SSDDisk) {$diskP_SSDDisk = 'P:'}  #Target disk
+#endregion Default values for Variables -->
 
 #region Get new disk online and format it -->
 $local_disks = Get-Disk | where {$_.PartitionStyle -eq 'RAW'}
