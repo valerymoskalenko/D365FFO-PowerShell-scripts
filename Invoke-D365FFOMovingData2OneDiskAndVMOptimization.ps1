@@ -178,52 +178,52 @@ $robocopy_logFile = 'C:\Temp\robocopy.txt'
 New-Item -Path $target_MSSQLData, $target_MSSQLLogs, $target_MSSQLBackup -ItemType Directory -Force
 #Install-Module -Name RobocopyPS -SkipPublisherCheck -Scope AllUsers
 Import-Module -Name RobocopyPS
-Write-Host "Copy MS SQL Data files. it should take about 9 minutes" -ForegroundColor Yellow
+Write-Host 'Copy MS SQL Data files. it should take about 9 minutes' -ForegroundColor Yellow
 $robocopyData = Invoke-RoboCopy -Source $source_MSSQLData -Destination $target_MSSQLData -LogFile $robocopy_logFile -IncludeEmptySubDirectories -ExcludeDirectory 'System Volume Information' -Threads 32
 if (-not $robocopyData.Success)
 {
     $robocopyData
     throw $robocopyData.LastExitCodeMessage
 } else {
-    Write-Host ".. Total time" $robocopyData.TotalTime "Speed" $robocopyData.Speed -ForegroundColor Gray
+    Write-Host '.. Total time' $robocopyData.TotalTime 'Speed' $robocopyData.Speed -ForegroundColor Gray
 }
-Write-Host "Copy MS SQL Logs files. it should take about 7 minutes" -ForegroundColor Yellow
+Write-Host 'Copy MS SQL Logs files. it should take about 7 minutes' -ForegroundColor Yellow
 $robocopyLogs = Invoke-RoboCopy -Source $source_MSSQLLogs -Destination $target_MSSQLLogs -LogFile $robocopy_logFile -IncludeEmptySubDirectories -ExcludeDirectory 'System Volume Information' -Threads 32
 if (-not $robocopyLogs.Success)
 {
     $robocopyLogs
     throw $robocopyLogs.LastExitCodeMessage
 } else {
-    Write-Host ".. Total time" $robocopyLogs.TotalTime "Speed" $robocopyLogs.Speed -ForegroundColor Gray
+    Write-Host '.. Total time' $robocopyLogs.TotalTime 'Speed' $robocopyLogs.Speed -ForegroundColor Gray
 }
-Write-Host "Copy MS SQL Backup files. it should take about 0 minutes" -ForegroundColor Yellow
+Write-Host 'Copy MS SQL Backup files. it should take about 0 minutes' -ForegroundColor Yellow
 $robocopyBackup = Invoke-RoboCopy -Source $source_MSSQLBackup -Destination $target_MSSQLBackup -LogFile $robocopy_logFile -IncludeEmptySubDirectories -ExcludeDirectory 'System Volume Information' -Threads 32
 if (-not $robocopyBackup.Success)
 {
     $robocopyBackup
     throw $robocopyBackup.LastExitCodeMessage
 } else {
-    Write-Host ".. Total time" $robocopyBackup.TotalTime "Speed" $robocopyBackup.Speed -ForegroundColor Gray
+    Write-Host '.. Total time' $robocopyBackup.TotalTime 'Speed' $robocopyBackup.Speed -ForegroundColor Gray
 }
-Write-Host "Copy files from Service Volume. it should take about 12 minutes" -ForegroundColor Yellow
+Write-Host 'Copy files from Service Volume. it should take about 12 minutes' -ForegroundColor Yellow
 $robocopyServiceVolume = Invoke-RoboCopy -Source $source_ServiceVolume -Destination $target_ServiceVolume -LogFile $robocopy_logFile -IncludeEmptySubDirectories -ExcludeDirectory 'System Volume Information' -Threads 32
 if (-not $robocopyServiceVolume.Success)
 {
     $robocopyServiceVolume
     throw $robocopyServiceVolume.LastExitCodeMessage
 } else {
-    Write-Host ".. Total time" $robocopyServiceVolume.TotalTime "Speed" $robocopyServiceVolume.Speed -ForegroundColor Gray
+    Write-Host '.. Total time' $robocopyServiceVolume.TotalTime 'Speed' $robocopyServiceVolume.Speed -ForegroundColor Gray
 }
 #endregion Copy data to disk P: <--
 
 #region Renaming disks -->
-Write-Host "Renaming disk P: to K:" -ForegroundColor Yellow
+Write-Host 'Renaming disk P: to K:' -ForegroundColor Yellow
 Get-Partition -DriveLetter $diskK_ServiceVolume.Replace(':','') | Set-Partition -NewDriveLetter Q -Verbose
 Get-Partition -DriveLetter $diskP_SSDDisk.Replace(':','') | Set-Partition -NewDriveLetter $diskK_ServiceVolume.Replace(':','') -Verbose
 #endregion Renaming disks <--
 
 #region Attach SQL Databases -->
-Write-Host "Attach all Databses back" -ForegroundColor Yellow
+Write-Host 'Attach all Databses back' -ForegroundColor Yellow
 $SQLScriptAtachAllDB = @"
     USE [master]
     GO
@@ -238,7 +238,7 @@ Invoke-DbaQuery -SqlInstance localhost -Database master -Query $SQLScriptAtachAl
 #endregion Attach SQL Databases <--
 
 #region Update Default paths in SQL Server -->
-Write-Host "Update Default paths in SQL Server" -ForegroundColor Yellow
+Write-Host 'Update Default paths in SQL Server' -ForegroundColor Yellow
 [string]$newTarget_MSSQLData = Join-Path -Path $diskK_ServiceVolume -ChildPath '\MSSQL\Data'
 [string]$newTarget_MSSQLLogs = Join-Path -Path $diskK_ServiceVolume -ChildPath '\MSSQL\Logs'
 [string]$newTarget_MSSQLBackup = Join-Path -Path $diskK_ServiceVolume -ChildPath '\MSSQL\Backup'
@@ -254,11 +254,11 @@ $server.Alter()
 #region Schedule script to Optimize Indexes on Databases -->
 $scriptPath = 'C:\Scripts'
 $scriptName = 'Optimize-AxDB.ps1'
-Write-Host "Installing Ola Hallengren's SQL Maintenance scripts”
+Write-Host "Installing Ola Hallengren's SQL Maintenance scripts"
 Import-Module -Name dbatools
 Install-DbaMaintenanceSolution -SqlInstance . -Database master
 Write-Host "Saving Script..." -ForegroundColor Yellow
-$script = @'
+$script = @"
     #region run Ola Hallengren's IndexOptimize
     $sqlIndexOptimize = "EXECUTE master.dbo.IndexOptimize
         @Databases = 'ALL_DATABASES',
@@ -274,21 +274,21 @@ $script = @'
     Import-Module -Name dbatools
     Invoke-DbaQuery -SqlInstance localhost -Query $sqlIndexOptimize
     #endregion run Ola Hallengren's IndexOptimize
-'@
+"@
 $scriptFullPath = Join-Path $scriptPath $scriptName
 New-Item -Path $scriptPath -ItemType Directory -Force
 Set-Content -Value $script -Path $scriptFullPath -Force
-Write-Host "Running Script for the first time..." -ForegroundColor Yellow
+Write-Host 'Running Script for the first time...' -ForegroundColor Yellow
 Invoke-Expression $scriptFullPath
 
-Write-Host "Registering the Script as Scheduled Task to run it Daily..." -ForegroundColor Yellow
+Write-Host 'Registering the Script as Scheduled Task to run it Daily...' -ForegroundColor Yellow
 #$atStartUp = New-JobTrigger -AtStartup -RandomDelay 00:40:00
 $atStartUp =  New-JobTrigger -Daily -At "3:07 AM" -DaysInterval 1 -RandomDelay 00:40:00
 $option = New-ScheduledJobOption -StartIfIdle -MultipleInstancePolicy IgnoreNew
 Register-ScheduledJob -Name AXDBOptimizationDailyTask -Trigger $atStartUp -FilePath $scriptFullPath -ScheduledJobOption $option
 #Unregister-ScheduledJob -Name AXDBOptimizationDailyTask
 
-Write-Host "Registering the Script as Scheduled Task to run it at Startup..." -ForegroundColor Yellow
+Write-Host 'Registering the Script as Scheduled Task to run it at Startup...' -ForegroundColor Yellow
 $atStartUp = New-JobTrigger -AtStartup -RandomDelay 00:55:00
 #$atStartUp =  New-JobTrigger -Daily -At "3:07 AM" -DaysInterval 1 -RandomDelay 00:40:00
 $option = New-ScheduledJobOption -StartIfIdle -MultipleInstancePolicy IgnoreNew
@@ -298,9 +298,9 @@ Register-ScheduledJob -Name AXDBOptimizationStartupTask -Trigger $atStartUp -Fil
 
 #region Delete Storage pool -->
 #if it failed, just re-execute whole block again or remove manually from Server Manager --> File and Storage Services --> Volumes --> Storage Pools
-Write-Host "Removing Storage Pool" -ForegroundColor Yellow
+Write-Host 'Removing Storage Pool' -ForegroundColor Yellow
 Get-VirtualDisk -FriendlyName "Pool0" | Remove-VirtualDisk -Verbose
 Get-StoragePool -IsPrimordial $false | Remove-StoragePool -Verbose
 #endregion Delete Storage pool <--
 
-Write-Host "Finished. Please stop VM and remove old disks" -ForegroundColor Green
+Write-Host 'Finished. Please stop VM and remove old disks' -ForegroundColor Green
