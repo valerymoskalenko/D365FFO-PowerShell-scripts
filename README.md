@@ -29,7 +29,10 @@ That executes OLA Index Optimization for all databases every day at 3:07 am and 
 
 # Invoke-D365FFOAxDBAutomaticBackup.ps1
 Create a Scheduled task.
-That executes AxDB backup and upload it to Azure Blob Storage every day at 8:07 am
+Executes AxDB backup and upload it to Azure Blob Storage every day at 8:07 am
+
+# Invoke-D365FFOAxDBRestoreFromBAK.ps1
+Restore AxDB from BAK file on the new FnO environment.
 
 # Invoke-D365FFOMovingData2OneDiskAndVMOptimization.ps1
 Optimization for LCS-controlled Azure VM (Tier 1 only)
