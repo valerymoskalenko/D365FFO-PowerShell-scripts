@@ -35,16 +35,16 @@ Executes AxDB backup and upload it to Azure Blob Storage every day at 8:07 am
 Restore AxDB from BAK file on the new FnO environment.
 
 # Invoke-D365FFOMovingData2OneDiskAndVMOptimization.ps1
-Optimization for LCS-controlled Azure VM (Tier 1 only)
+Optimization for LCS-controlled Azure VM (Cloud-hosted environments only)
 - Deploy new VM through LCS
    - Tier 1 only. Cloud-hosted on your Azure subscription
    - Set 2,4, or any disks
-   - Set it Premium SSD, Managed
+   - Set it to Premium SSD, Managed
 - Wait for deployment completion
-- Add new Premium SSD to your LCS Azure VM
-- Open remote desktop conneciton and execute this PowerShell script. 
-   This script do the following
-     - Detact new disk. Init and format it.
+- Add a new Standard SSD to your LCS Azure VM
+- Open the Remote Desktop Connection and execute this PowerShell script. 
+   This script does the following (automatic):
+     - Detect new disk. Init and format it.
      - Add SQL service account to Administrators group and update Local Policy
      - Update Windows Defender rules
      - Set min and max RAM for SQL server
@@ -57,9 +57,12 @@ Optimization for LCS-controlled Azure VM (Tier 1 only)
      - Update default paths on SQL server
      - Schedule Index Optimization task
      - Delete old disks and storage pool 
+- Review that script above completed successfully 
+- Stop VM
 - Detach old disks (2,4, or more)
+- Start VM and do a smoke test on the environment
 - Delete old detached disks from Azure Storage
-- Convert disks to Standard SSD, update cache options
+
 
 # Test-D365FOLabelsFromCheckins.ps1
 Find missing labels between Latest checked-in Label file and all versions of the same Label file.
