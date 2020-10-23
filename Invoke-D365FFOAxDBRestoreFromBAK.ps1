@@ -1,3 +1,4 @@
+#https://github.com/valerymoskalenko/D365FFO-PowerShell-scripts/blob/master/Invoke-D365FFOAxDBRestoreFromBAK.ps1
 $f = Get-ChildItem D:\temp\AxDB_GWTest_20201021.bak  #Please note that this file should be accessible from SQL server service account
 $dbName = $f.BaseName #'AxDB_CTS1005BU2'  #Temporary Database name for new AxDB. Use a file name or any meaningful name.
 
