@@ -7,6 +7,7 @@ $ErrorActionPreference = "Stop"
 #region Installing d365fo.tools and dbatools <--
 # This is requried by Find-Module, by doing it beforehand we remove some warning messages
 Write-Host "Installing PowerShell modules d365fo.tools and dbatools" -ForegroundColor Yellow
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope AllUsers
 Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
 $modules2Install = @('d365fo.tools', 'dbatools')
