@@ -32,7 +32,10 @@ Create a Scheduled task.
 Executes AxDB backup and upload it to Azure Blob Storage every day at 8:07 am
 
 # Invoke-D365FFOAxDBRestoreFromBAK.ps1
-Restore AxDB from BAK file on the new FnO environment.
+Restore AxDB database from BAK file on the new D365FO FnO environment.
+
+# Invoke-D365FFOAxDBRestoreFromBACPAC.ps1
+Restore AxDB database from BACPAC file on the new D365FO FnO environment.
 
 # Invoke-D365FFOMovingData2OneDiskAndVMOptimization.ps1
 Optimization for LCS-controlled Azure VM (Cloud-hosted environments only)
