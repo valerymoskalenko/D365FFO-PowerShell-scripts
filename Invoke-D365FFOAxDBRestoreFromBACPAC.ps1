@@ -81,10 +81,14 @@ Invoke-DbaQuery -SqlInstance localhost -Database AxDB -Query $sqlSysTablesTrunca
 Write-Host "Cleaning up Power BI settings" -ForegroundColor Yellow
 Invoke-DbaQuery -SqlInstance localhost -Database AxDB -Query "UPDATE PowerBIConfig set CLIENTID = '', APPLICATIONKEY = '', REDIRECTURL = ''"
 
-
 ## Run Database Sync
 Write-Host "Executing Database Sync" -ForegroundColor Yellow
 Invoke-D365DBSync -ShowOriginalProgress -Verbose
+
+## Backup AxDB database
+Write-Host "Backup AxDB" -ForegroundColor Yellow
+Backup-DbaDatabase -SqlInstance localhost -Database AxDB -Type Full -CompressBackup -BackupFileName "dbname-$NewDB-backuptype-timestamp.bak" -ReplaceInName
+
 
 ## Promote user as admin and set default tenant  (Optional)
 #Set-D365Admin -AdminSignInName 'D365Admin@ciellos.com'
