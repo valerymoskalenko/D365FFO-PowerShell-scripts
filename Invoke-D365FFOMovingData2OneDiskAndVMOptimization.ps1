@@ -164,6 +164,10 @@ $SQLScriptDetachAllDB = @'
 Invoke-DbaQuery -SqlInstance localhost -Database master -Query $SQLScriptDetachAllDB
 #endregion Shutdown D365FO and Detach all D365FO SQL Databases -->
 
+#region stop Monitoring services -->
+Get-Service DiagTrack,Dmwappushservice,MR2012ProcessService | Stop-Service -Force -Verbose
+#endregion stop Monitoring services <--
+
 #region Copy data to disk P: -->
 $target_MSSQLData = Join-Path -Path $diskP_SSDDisk -ChildPath '\MSSQL\Data'
 $target_MSSQLLogs = Join-Path -Path $diskP_SSDDisk -ChildPath '\MSSQL\Logs'
