@@ -206,6 +206,7 @@ if (-not $robocopyBackup.Success)
     Write-Host '.. Total time' $robocopyBackup.TotalTime 'Speed' $robocopyBackup.Speed -ForegroundColor Gray
 }
 Write-Host 'Copy files from Service Volume. it should take about 12 minutes' -ForegroundColor Yellow
+#Exclude it as well Copying File K:\MonAgentData\SingleAgent\Tables\AsmScannerCounter_00000001000001.tsf. The system cannot find the file specified.
 $robocopyServiceVolume = Invoke-RoboCopy -Source $source_ServiceVolume -Destination $target_ServiceVolume -LogFile $robocopy_logFile -IncludeEmptySubDirectories -ExcludeDirectory 'System Volume Information' -Threads 32
 if (-not $robocopyServiceVolume.Success)
 {
@@ -223,7 +224,7 @@ Get-Partition -DriveLetter $diskP_SSDDisk.Replace(':','') | Set-Partition -NewDr
 #endregion Renaming disks <--
 
 #region Attach SQL Databases -->
-Write-Host 'Attach all Databses back' -ForegroundColor Yellow
+Write-Host 'Attach all Databases back' -ForegroundColor Yellow
 $SQLScriptAtachAllDB = @"
     USE [master]
     GO
