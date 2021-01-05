@@ -64,6 +64,22 @@ Write-Host "Prevent password age pop up" -ForegroundColor Yellow
 net accounts /maxpwage:unlimited
 #endregion password age pop up -->
 
+
+#region install chocolatey and fix IIS <--
+#Install Chocolatey
+Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+
+#Set Chocolatey Safe Switch
+chocolatey feature enable -n allowGlobalConfirmation
+
+#Install Nartac SSL
+choco install iiscrypto-cli
+
+#Apply nartac best practice SSL TLS Settings
+iiscryptocli.exe /template best
+#endregion install chocolatey and fix IIS -->
+
+
 #region Installing d365fo.tools and dbatools <--
 Write-Host "Installing d365fo.tools and dbatools PowerShell modules" -ForegroundColor Yellow
 # This is requried by Find-Module, by doing it beforehand we remove some warning messages
@@ -112,7 +128,6 @@ RECONFIGURE WITH OVERRIDE
 GO
 EXEC sys.sp_configure N'show advanced options', N'0'  RECONFIGURE WITH OVERRIDE
 GO
-
 sp_dropserver [$($oldName.Name)];
 GO
 sp_addserver [$newName], local;
@@ -216,12 +231,16 @@ Register-ScheduledJob -Name AXDBOptimizeStartupTask -Trigger $atStartUp -FilePat
 #endregion Schedule script to Optimize Indexes on Databases -->
 
 #region Downloading Chrome browser <--
-Write-Host "Downloading Chrome browser" -ForegroundColor Yellow
-$Path = $env:TEMP;
-$Installer = "chrome_installer.exe";
-Invoke-WebRequest 'https://dl.google.com/chrome/install/latest/chrome_installer.exe' -Outfile $Path\$Installer;
-Start-Process -FilePath $Path\$Installer -Args "/silent /install" -Verb RunAs -Wait;
-Remove-Item $Path\$Installer
+
+#install Google Chrome, Far Manager, and 7-zip
+Write-Host "Downloading Chrome browser, Far manager, and 7-zip" -ForegroundColor Yellow
+choco install GoogleChrome, Far, 7zip
+
+#$Path = $env:TEMP;
+#$Installer = "chrome_installer.exe";
+#Invoke-WebRequest 'https://dl.google.com/chrome/install/latest/chrome_installer.exe' -Outfile $Path\$Installer;
+#Start-Process -FilePath $Path\$Installer -Args "/silent /install" -Verb RunAs -Wait;
+#Remove-Item $Path\$Installer
 #endregion Downloading Chrome browser -->
 
 #region Fix Trace Parser <--
