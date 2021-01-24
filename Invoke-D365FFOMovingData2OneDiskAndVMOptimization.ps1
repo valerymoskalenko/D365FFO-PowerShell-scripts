@@ -296,7 +296,7 @@ $script = @'
 $scriptFullPath = Join-Path $scriptPath $scriptName
 New-Item -Path $scriptPath -ItemType Directory -Force
 Set-Content -Value $script -Path $scriptFullPath -Force
-Write-Host 'Running Script for the first time...' -ForegroundColor Yellow
+Write-Host 'Running Script for the first time (10 minutes) ...' -ForegroundColor Yellow
 Invoke-Expression $scriptFullPath
 
 Write-Host 'Registering the Script as Scheduled Task to run it Daily...' -ForegroundColor Yellow
