@@ -19,11 +19,22 @@ foreach($module in  $modules2Install)
 }
 #endregion Installing d365fo.tools and dbatools -->
 
+#region Shutdown D365FO and Apply Defender rules <--
+Write-Host 'Stopping D365FO' -ForegroundColor Yellow
+Stop-D365Environment -All
+Add-D365WindowsDefenderRules  #Add Defender Rules to improve performance
+#endregion Shutdown D365FO and Apply Defender rules -->
+
 #region Default values for Variables<--
+[string]$diskK_ServiceVolume = (Get-Volume -FileSystemLabel 'Service Volume').DriveLetter + ':';
 if ($null -eq $diskK_ServiceVolume) {$diskK_ServiceVolume = 'K:'}
+[string]$diskG_MSSQLData = (Get-Volume -FileSystemLabel 'MSSQL Data').DriveLetter + ':';
 if ($null -eq $diskG_MSSQLData) {$diskG_MSSQLData = 'G:'}
+[string]$diskH_MSSQLLogs = (Get-Volume -FileSystemLabel 'MSSQL Logs').DriveLetter + ':';
 if ($null -eq $diskH_MSSQLLogs) {$diskH_MSSQLLogs = 'H:'}
+[string]$diskI_MSSQLTempDB = (Get-Volume -FileSystemLabel 'TempDB Storage').DriveLetter + ':';
 if ($null -eq $diskI_MSSQLTempDB) {$diskI_MSSQLTempDB = 'I:'} #JFI, We are going to skip this folder. It will be restored automatically by MSSQL in disk D:\
+[string]$diskJ_MSSQLBackup = (Get-Volume -FileSystemLabel 'MSSQL Backup').DriveLetter + ':';
 if ($null -eq $diskJ_MSSQLBackup) {$diskJ_MSSQLBackup = 'J:'}
 if ($null -eq $diskP_SSDDisk) {$diskP_SSDDisk = 'P:'}  #Target disk
 #endregion Default values for Variables -->
@@ -52,12 +63,6 @@ Grant-Privilege -Identity $mssqlServiceUser -Privilege SeImpersonatePrivilege -V
 Grant-Privilege -Identity $mssqlServiceUser -Privilege SeLockMemoryPrivilege -Verbose
 Grant-Privilege -Identity $mssqlServiceUser -Privilege SeManageVolumePrivilege -Verbose
 #endregion Adding sql service account to the local Administrator group -->
-
-#region Shutdown D365FO and Apply Defender rules <--
-Write-Host 'Stopping D365FO' -ForegroundColor Yellow
-Stop-D365Environment -All
-Add-D365WindowsDefenderRules  #Add Defender Rules to improve performance
-#endregion Shutdown D365FO and Apply Defender rules -->
 
 #region General SQL Server settings <--
 Write-Host 'SQL Server settings' -ForegroundColor Yellow
@@ -134,7 +139,7 @@ foreach($database in @('AxDB','AxDW','DynamicsAxReportServer','DynamicsAxReportS
     }
 #Read more: https://www.sharepointdiary.com/2017/06/change-sql-server-database-initial-size-auto-growth-settings-using-powershell.html#ixzz6LZFf2mHH
 }
-Write-Host 'SQL Performance optimization: Shrink all user Databases' -ForegroundColor Yellow
+Write-Host 'SQL Performance optimization: Shrink all user Databases (60 minutes)' -ForegroundColor Yellow
 Invoke-DbaDbShrink -SqlInstance localhost -AllUserDatabases -Verbose
 #endregion SQL Databases optimization: Set grow step and Execute DB Shrink <--
 
@@ -165,10 +170,18 @@ Invoke-DbaQuery -SqlInstance localhost -Database master -Query $SQLScriptDetachA
 #endregion Shutdown D365FO and Detach all D365FO SQL Databases -->
 
 #region stop Monitoring services -->
-Get-Service DiagTrack,Dmwappushservice,MR2012ProcessService | Stop-Service -Force -Verbose
+Write-Host 'Stopping monitoring and diagnostics services' -ForegroundColor Yellow
+Get-Service DiagTrack,Dmwappushservice,MR2012ProcessService,LCSDiagnosticClientService | Stop-Service -Force -Verbose
+
+Write-Host '..Stopping Monitoring Agent ETW sessions...' -ForegroundColor Yellow
+& K:\Monitoring\MonitoringInstall\MonitoringInstall.exe /stopsessions /log:K:\Monitoring\MonitoringInstall\Stopsessions.log /append
+
+Write-Host '..Stopping Monitoring Agent processes...' -ForegroundColor Yellow
+& K:\Monitoring\MonitoringInstall\MonitoringInstall.exe /stopagentlauncher /id:SingleAgent /log:K:\Monitoring\MonitoringInstall\StopAgentLauncher.log /append /agentDirectory:K:\Monitoring\MonitoringInstall /rootdatadir:K:\MonAgentData
 #endregion stop Monitoring services <--
 
 #region Copy data to disk P: -->
+Write-Host 'Starting of data moving...' -ForegroundColor Yellow
 $target_MSSQLData = Join-Path -Path $diskP_SSDDisk -ChildPath '\MSSQL\Data'
 $target_MSSQLLogs = Join-Path -Path $diskP_SSDDisk -ChildPath '\MSSQL\Logs'
 $target_MSSQLBackup = Join-Path -Path $diskP_SSDDisk -ChildPath '\MSSQL\Backup'
