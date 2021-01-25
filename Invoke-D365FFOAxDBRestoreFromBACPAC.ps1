@@ -43,6 +43,7 @@ if (($null -ne $BacpacSasLinkFromLCS) -or ($BacpacSasLinkFromLCS -ne ''))
     $TempFileName = Join-path $TempFolder -ChildPath "$NewDB.bacpac"
 
     Write-Host "..Downloading file" $TempFileName -ForegroundColor Yellow
+    Invoke-D365InstallAzCopy
     Invoke-D365AzCopyTransfer -SourceUri $BacpacSasLinkFromLCS -DestinationUri $TempFileName -ShowOriginalProgress
 
     $f = Get-ChildItem $TempFileName 
