@@ -56,7 +56,7 @@ if (($null -ne $BacpacSasLinkFromLCS) -or ($BacpacSasLinkFromLCS -ne ''))
 ## Stopping of D365FO will just improve performance / RAM Memory consumption
 Write-Host "Stopping D365FO environment" -ForegroundColor Yellow
 Stop-D365Environment
-Enable-D365Exception
+Enable-D365Exception -Verbose
 
 ## Import bacpac to SQL Database
 If (-not (Test-DbaPath -SqlInstance localhost -Path $($f.FullName)))
