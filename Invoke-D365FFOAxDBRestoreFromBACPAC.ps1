@@ -3,8 +3,15 @@
 #Use the following PowerShell script to convert bacpac file to the SQL Database
 #https://github.com/valerymoskalenko/D365FFO-PowerShell-scripts/blob/master/Invoke-D365FFOAxDBRestoreFromBACPAC.ps1
 
-$f = Get-ChildItem D:\temp\SandboxTest-20200130.bacpac  #Please note that this file should be accessible from SQL server service account
-$NewDB = $($f.BaseName).Replace(' ','_'); #'AxDB_CTS1005BU2'  #Temporary Database name for new AxDB. Use a file name or any meaningful name.
+#If you are going to download BACPAC file from the LCS Asset Library, please use in this section
+$BacpacSasLinkFromLCS = 'https://uswedpl1catalog.blob.core.windows.net/product-financeandoperations/8fffcb0a-52b4-40e3-ba54-b0000280893a/FinanceandOperations-AX7ProductVersion-17-b89a7d24-38c6-497a-ad92-ecfe94e9ea9f-8fffcb0a-52b4-40e3-ba54-b0000280893a?sv=2015-12-11&sr=b&sig=rTGkfdfIIJyv0EBl%2FlIiugNRPKLQLbwR1bWxMrrmkAE%3D&se=2021-01-26T09%3A51%3A27Z&sp=r'
+$NewDB = 'CTS_20210122' #Database name. No spaces in the name!
+$TempFolder = 'd:\temp\' # 'c:\temp\'  #$env:TEMP
+
+#If you are NOT going to download BACPAC file from the LCS Asset Library, please use in this section
+#$BacpacSasLinkFromLCS = ''
+#$f = Get-ChildItem D:\temp\SandboxTest-20200130.bacpac  #Please note that this file should be accessible from SQL server service account
+#$NewDB = $($f.BaseName).Replace(' ','_'); #'AxDB_CTS1005BU2'  #Temporary Database name for new AxDB. Use a file name or any meaningful name.
 
 #############################################
 $ErrorActionPreference = "Stop"
@@ -27,6 +34,21 @@ foreach($module in  $modules2Install)
     }
 }
 #endregion Installing d365fo.tools and dbatools -->
+
+#region Download bacpac from LCS
+if (($null -ne $BacpacSasLinkFromLCS) -or ($BacpacSasLinkFromLCS -ne ''))
+{
+    Write-Host "Downloading BACPAC from the LCS Asset library" -ForegroundColor Yellow
+    New-Item -Path $TempFolder -ItemType Directory -Force
+    $TempFileName = Join-path $TempFolder -ChildPath "$NewDB.bacpac"
+
+    Write-Host "..Downloading file" $TempFileName -ForegroundColor Yellow
+    Invoke-D365AzCopyTransfer -SourceUri $BacpacSasLinkFromLCS -DestinationUri $TempFileName -ShowOriginalProgress
+
+    $f = Get-ChildItem $TempFileName 
+    $NewDB = $($f.BaseName).Replace(' ','_')
+}
+#endregion Download bacpac from LCS
 
 ## Stop D365FO instance.
 ## Optional. You may Import bacpac while D365FO is up and running
