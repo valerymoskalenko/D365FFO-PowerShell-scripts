@@ -52,6 +52,7 @@ if (($null -ne $BacpacSasLinkFromLCS) -or ($BacpacSasLinkFromLCS -ne ''))
 ## Stop D365FO instance
 Write-Host "Stopping D365FO environment" -ForegroundColor Yellow
 Stop-D365Environment | FT
+Enable-D365Exception
 
 ## Restore New Database to SQL Server. Database name is AxDB_NEW
 Write-Host "Restoring new Database" -ForegroundColor Yellow
