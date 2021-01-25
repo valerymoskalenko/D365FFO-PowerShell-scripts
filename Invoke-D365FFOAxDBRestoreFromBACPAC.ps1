@@ -4,7 +4,7 @@
 #https://github.com/valerymoskalenko/D365FFO-PowerShell-scripts/blob/master/Invoke-D365FFOAxDBRestoreFromBACPAC.ps1
 
 #If you are going to download BACPAC file from the LCS Asset Library, please use in this section
-$BacpacSasLinkFromLCS = 'https://uswedpl1catalog.blob.core.windows.net/product-financeandoperations/8fffcb0a-52b4-40e3-ba54-b0000280893a/FinanceandOperations-AX7ProductVersion-17-b89a7d24-38c6-497a-ad92-ecfe94e9ea9f-8fffcb0a-52b4-40e3-ba54-b0000280893a?sv=2015-12-11&sr=b&sig=rTGkfdfIIJyv0EBl%2FlIiugNRPKLQLbwR1bWxMrrmkAE%3D&se=2021-01-26T09%3A51%3A27Z&sp=r'
+$BacpacSasLinkFromLCS = 'https://uswedpl1catalog.blob.core.windows.net/product-financeandoperations/000f0000-1111-2222-3333-b0000280893a/FinanceandOperations-AX7ProductVersion-17-b89a7d24-1111-2222-3333-ecfe94e9ea9f-8fffcb0a-5555-6666-7777-b0000280893a?sv=2015-12-11&sr=b&sig=rTGkfdfIIJyv0EBl%2FlIiugN3567745674567xMrrmkAE%3D&se=2021-01-26T09%3A51%3A27Z&sp=r'
 $NewDB = 'CTS_20210122' #Database name. No spaces in the name!
 $TempFolder = 'd:\temp\' # 'c:\temp\'  #$env:TEMP
 
