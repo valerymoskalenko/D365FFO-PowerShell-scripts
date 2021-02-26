@@ -3,7 +3,7 @@
 
 #If you are going to download BACPAC file from the LCS Asset Library, please use in this section
 $BacpacSasLinkFromLCS = 'https://sqlbackup.blob.core.windows.net/fs3main-10/FS3Main-10_2021-01-25_083223.bak?sp=r&st=2021-01-25T11:07:13Z&se=2021-01-25T19:07:13Z&spr=https&sv=2019-12-12&sr=b&sig=xifYrEe4Lqts%2B000000000000000000000F9R%2BitGtaQAo%3D'
-$dbName = 'CTSMain' #Database name. No spaces in the name!
+$dbName = 'CTSMain' #Database name. No spaces in the name! It could a name of the environment or original database name
 $TempFolder = 'd:\temp\' # 'c:\temp\'  #$env:TEMP
 
 #If you are NOT going to download BACPAC file from the LCS Asset Library, please use in this section
