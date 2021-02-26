@@ -128,6 +128,13 @@ Register-ScheduledJob -Name AxDBBackupStartupTask -Trigger $atStartUp -File
 #Unregister-ScheduledJob -Name AxDBBackupStartupTask
 #endregion Registering the Script as Scheduled Task to run it Daily
 	
-#Azure log out. Answer yes to clean your credentials 
+#Azure log out. Answer yes to clean your credentials
+Write-Host "Disconnecting and cleaning up any credentials. Please confirm it. If it generates an error then retry" -ForegroundColor Yellow
 Disconnect-AzAccount
 Clear-AzContext -Scope CurrentUser
+
+#Fixing AzureRM and Az modules incompatibility for d365fo.tools
+install-module AzureRM.profile -AllowClobber
+install-module Azure.Storage -AllowClobber
+
+
