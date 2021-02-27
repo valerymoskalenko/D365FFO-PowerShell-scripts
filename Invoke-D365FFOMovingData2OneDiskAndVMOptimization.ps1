@@ -112,6 +112,7 @@ Invoke-DbaQuery -SqlInstance localhost -Database master -Query $SQLScriptMoveTem
 #Import SQL PowerShell module
 Import-Module SQLPS –DisableNameChecking
 Write-Host 'SQL Performance optimization: Set growing factor to 64MByte' -ForegroundColor Yellow
+
 foreach($database in @('AxDB','AxDW','DynamicsAxReportServer','DynamicsAxReportServerTempDB','DYNAMICSXREFDB','FinancialReportingDb'))
 {
     $SQLDatabase = Get-SqlDatabase -Name $database -ServerInstance localhost
@@ -139,8 +140,9 @@ foreach($database in @('AxDB','AxDW','DynamicsAxReportServer','DynamicsAxReportS
     }
 #Read more: https://www.sharepointdiary.com/2017/06/change-sql-server-database-initial-size-auto-growth-settings-using-powershell.html#ixzz6LZFf2mHH
 }
-Write-Host 'SQL Performance optimization: Shrink all user Databases (60 minutes)' -ForegroundColor Yellow
-Invoke-DbaDbShrink -SqlInstance localhost -AllUserDatabases -Verbose
+
+Write-Host 'SQL Performance optimization: Shrink all user Databases (10 minutes)' -ForegroundColor Yellow
+Invoke-DbaDbShrink -SqlInstance localhost -AllUserDatabases -ExcludeDatabase DYNAMICSXREFDB -Verbose
 #endregion SQL Databases optimization: Set grow step and Execute DB Shrink <--
 
 #region Detach all D365FO SQL Databases <--
@@ -171,13 +173,31 @@ Invoke-DbaQuery -SqlInstance localhost -Database master -Query $SQLScriptDetachA
 
 #region stop Monitoring services -->
 Write-Host 'Stopping monitoring and diagnostics services' -ForegroundColor Yellow
-Get-Service DiagTrack,Dmwappushservice,MR2012ProcessService,LCSDiagnosticClientService | Stop-Service -Force -Verbose
+Get-Service DiagTrack,Dmwappushservice,MR2012ProcessService,LCSDiagnosticClientService -ErrorAction SilentlyContinue | Stop-Service -Force -Verbose
 
 Write-Host '..Stopping Monitoring Agent ETW sessions...' -ForegroundColor Yellow
 & K:\Monitoring\MonitoringInstall\MonitoringInstall.exe /stopsessions /log:K:\Monitoring\MonitoringInstall\Stopsessions.log /append
 
 Write-Host '..Stopping Monitoring Agent processes...' -ForegroundColor Yellow
 & K:\Monitoring\MonitoringInstall\MonitoringInstall.exe /stopagentlauncher /id:SingleAgent /log:K:\Monitoring\MonitoringInstall\StopAgentLauncher.log /append /agentDirectory:K:\Monitoring\MonitoringInstall /rootdatadir:K:\MonAgentData
+
+#Stop D365 environment again
+Write-Host 'Stopping and disabling all FSCM services' -ForegroundColor Yellow
+Stop-D365Environment -All
+Get-D365Environment | Set-Service -StartupType Disabled
+
+#Main FSCM services
+Get-process -Name Batch, MRServiceHost, Microsoft.Dynamics.AX.Framework.Tools.DMF.SSISHelperService -ErrorAction SilentlyContinue | Stop-Process -Force -Verbose
+
+#IIS Services
+Get-Process -Name iisadmin, was, w3svc -ErrorAction SilentlyContinue | Stop-Process -Force -Verbose
+
+#monitoring Services
+Get-Process -Name LCSDiagFXService, MonAgentCore, MonAgentHost, MonAgentLauncher, MonAgentManager, WindowsAzureGuestAgent, WindowsAzureNetAgent -ErrorAction SilentlyContinue | Stop-Process -Force -Verbose
+
+#SQL Services
+Write-Host 'Stopping SQL Services' -ForegroundColor Yellow
+Stop-DbaService -Force
 #endregion stop Monitoring services <--
 
 #region Copy data to disk P: -->
@@ -195,7 +215,7 @@ $robocopy_logFile = 'C:\Temp\robocopy.txt'
 New-Item -Path $target_MSSQLData, $target_MSSQLLogs, $target_MSSQLBackup -ItemType Directory -Force
 #Install-Module -Name RobocopyPS -SkipPublisherCheck -Scope AllUsers
 Import-Module -Name RobocopyPS
-Write-Host 'Copy MS SQL Data files. it should take about 9 minutes' -ForegroundColor Yellow
+Write-Host 'Copy MS SQL Data files. It could take about 9 minutes' -ForegroundColor Yellow
 $robocopyData = Invoke-RoboCopy -Source $source_MSSQLData -Destination $target_MSSQLData -LogFile $robocopy_logFile -IncludeEmptySubDirectories -ExcludeDirectory 'System Volume Information' -Threads 32
 if (-not $robocopyData.Success)
 {
@@ -204,7 +224,7 @@ if (-not $robocopyData.Success)
 } else {
     Write-Host '.. Total time' $robocopyData.TotalTime 'Speed' $robocopyData.Speed -ForegroundColor Gray
 }
-Write-Host 'Copy MS SQL Logs files. it should take about 7 minutes' -ForegroundColor Yellow
+Write-Host 'Copy MS SQL Logs files. It could take about 7 minutes' -ForegroundColor Yellow
 $robocopyLogs = Invoke-RoboCopy -Source $source_MSSQLLogs -Destination $target_MSSQLLogs -LogFile $robocopy_logFile -IncludeEmptySubDirectories -ExcludeDirectory 'System Volume Information' -Threads 32
 if (-not $robocopyLogs.Success)
 {
@@ -213,7 +233,7 @@ if (-not $robocopyLogs.Success)
 } else {
     Write-Host '.. Total time' $robocopyLogs.TotalTime 'Speed' $robocopyLogs.Speed -ForegroundColor Gray
 }
-Write-Host 'Copy MS SQL Backup files. it should take about 0 minutes' -ForegroundColor Yellow
+Write-Host 'Copy MS SQL Backup files. It could take about 0 minutes' -ForegroundColor Yellow
 $robocopyBackup = Invoke-RoboCopy -Source $source_MSSQLBackup -Destination $target_MSSQLBackup -LogFile $robocopy_logFile -IncludeEmptySubDirectories -ExcludeDirectory 'System Volume Information' -Threads 32
 if (-not $robocopyBackup.Success)
 {
@@ -222,7 +242,7 @@ if (-not $robocopyBackup.Success)
 } else {
     Write-Host '.. Total time' $robocopyBackup.TotalTime 'Speed' $robocopyBackup.Speed -ForegroundColor Gray
 }
-Write-Host 'Copy files from Service Volume. it should take about 12 minutes' -ForegroundColor Yellow
+Write-Host 'Copy files from Service Volume. It could take about 12 minutes' -ForegroundColor Yellow
 #Exclude it as well Copying File K:\MonAgentData\SingleAgent\Tables\AsmScannerCounter_00000001000001.tsf. The system cannot find the file specified.
 $robocopyServiceVolume = Invoke-RoboCopy -Source $source_ServiceVolume -Destination $target_ServiceVolume -LogFile $robocopy_logFile -IncludeEmptySubDirectories -ExcludeDirectory 'System Volume Information' -Threads 32
 if (-not $robocopyServiceVolume.Success)
@@ -241,6 +261,9 @@ Get-Partition -DriveLetter $diskP_SSDDisk.Replace(':','') | Set-Partition -NewDr
 #endregion Renaming disks <--
 
 #region Attach SQL Databases -->
+Write-Host 'Start SQL Services back' -ForegroundColor Yellow
+Start-DbaService
+
 Write-Host 'Attach all Databases back' -ForegroundColor Yellow
 $SQLScriptAtachAllDB = @"
     USE [master]
@@ -312,9 +335,12 @@ Register-ScheduledJob -Name AXDBOptimizationStartupTask -Trigger $atStartUp -Fil
 #Unregister-ScheduledJob -Name AXDBOptimizationStartupTask
 #endregion Schedule script to Optimize Indexes on Databases <--
 
+# Enable D365 Services
+Get-D365Environment | Set-Service -StartupType Automatic
+
 #region Delete Storage pool -->
 #if it failed, just re-execute whole block again or remove manually from Server Manager --> File and Storage Services --> Volumes --> Storage Pools
-Write-Host 'Removing Storage Pool' -ForegroundColor Yellow
+Write-Host 'Removing Storage Pool. Confirm that you are going to remove old disks' -ForegroundColor Yellow
 Get-VirtualDisk -FriendlyName 'Pool0' | Remove-VirtualDisk -Verbose
 Get-StoragePool -IsPrimordial $false | Remove-StoragePool -Verbose
 #endregion Delete Storage pool <--
