@@ -2,8 +2,8 @@
 [string]$dt = get-date -Format "yyyyMMdd_HHmmss" #Generate the datetime stamp to make DB files unique
 
 #If you are going to download BACPAC file from the LCS Asset Library, please use in this section
-$BacpacSasLinkFromLCS = 'https://sqlbackup.blob.core.windows.net/fs3main-10/FS3Main-10_2021-01-25_083223.bak?sp=r&st=2021-01-25T11:07:13Z&se=2021-01-25T19:07:13Z&spr=https&sv=2019-12-12&sr=b&sig=xifYrEe4Lqts%2B000000000000000000000F9R%2BitGtaQAo%3D'
-$dbName = 'CTSMain' #Database name. No spaces in the name! It could a name of the environment or original database name
+$BacpacSasLinkFromLCS = 'https://ctssqlbackup.blob.core.windows.net/fs3main-10/FS3Main-10_2021-01-25_083223.bak?sp=r&st=2021-01-26T07:40:21Z&se=2021-01-26T15:40:21Z&spr=https&sv=2019-12-12&sr=b&sig=15%2ByPW000000000000000lJYA%3D'
+$dbName = 'CTSMain' #Any Meaningful name. Original Environment name, Project name, ... No spaces in the name!
 $TempFolder = 'd:\temp\' # 'c:\temp\'  #$env:TEMP
 
 #If you are NOT going to download BACPAC file from the LCS Asset Library, please use in this section
@@ -33,26 +33,26 @@ foreach($module in  $modules2Install)
 }
 #endregion Installing d365fo.tools and dbatools -->
 
-#region Download bacpac from LCS
-if (($null -ne $BacpacSasLinkFromLCS) -or ($BacpacSasLinkFromLCS -ne ''))
-{
-    Write-Host "Downloading BACPAC from the LCS Asset library" -ForegroundColor Yellow
-    New-Item -Path $TempFolder -ItemType Directory -Force
-    $TempFileName = Join-path $TempFolder -ChildPath "$dbName_$dt.bak"
-
-    Write-Host "..Downloading file" $TempFileName -ForegroundColor Yellow
-    Invoke-D365InstallAzCopy
-    Invoke-D365AzCopyTransfer -SourceUri $BacpacSasLinkFromLCS -DestinationUri $TempFileName -ShowOriginalProgress
-
-    $f = Get-ChildItem $TempFileName 
-    $dbName = $($f.BaseName).Replace(' ','_')
-}
-#endregion Download bacpac from LCS
-
 ## Stop D365FO instance
 Write-Host "Stopping D365FO environment" -ForegroundColor Yellow
 Stop-D365Environment | FT
 Enable-D365Exception -Verbose
+
+#region Download bacpac from LCS
+if ($BacpacSasLinkFromLCS.StartsWith('http'))
+{
+    Write-Host "Downloading BACPAC from the LCS Asset library" -ForegroundColor Yellow
+    New-Item -Path $TempFolder -ItemType Directory -Force
+    $TempFileName = Join-path $TempFolder -ChildPath $($dbName + '_' + $dt + '.bak')
+
+    Write-Host "..Downloading file" $TempFileName -ForegroundColor Yellow
+    Invoke-D365InstallAzCopy
+    Invoke-D365AzCopyTransfer -SourceUri $BacpacSasLinkFromLCS -DestinationUri $TempFileName -ShowOriginalProgress -EnableException
+
+    $f = Get-ChildItem $TempFileName
+    $dbName = $($f.BaseName).Replace(' ','_')
+}
+#endregion Download bacpac from LCS
 
 ## Restore New Database to SQL Server. Database name is AxDB_NEW
 Write-Host "Restoring new Database" -ForegroundColor Yellow
