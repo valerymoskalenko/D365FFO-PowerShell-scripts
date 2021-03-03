@@ -57,6 +57,7 @@ if (($null -ne $BacpacSasLinkFromLCS) -or ($BacpacSasLinkFromLCS -ne ''))
 Write-Host "Stopping D365FO environment" -ForegroundColor Yellow
 Stop-D365Environment
 Enable-D365Exception -Verbose
+Invoke-D365InstallSqlPackage  #Installing modern SqlPackage just in case
 
 ## Import bacpac to SQL Database
 If (-not (Test-DbaPath -SqlInstance localhost -Path $($f.FullName)))
