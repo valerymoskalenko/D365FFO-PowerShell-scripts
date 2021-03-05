@@ -265,6 +265,7 @@ Write-Host 'Start SQL Services back' -ForegroundColor Yellow
 Start-DbaService
 
 Write-Host 'Attach all Databases back' -ForegroundColor Yellow
+Write-Host '  Please note that only standard databases will be restored. If this environment has the AxDB restored from other environment, it will be necessary to re-attach it manually' -ForegroundColor Yellow
 $SQLScriptAtachAllDB = @"
     USE [master]
     GO
