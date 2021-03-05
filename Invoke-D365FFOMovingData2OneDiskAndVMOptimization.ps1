@@ -41,6 +41,19 @@ if ($null -eq $diskP_SSDDisk) {$diskP_SSDDisk = 'P:'}  #Target disk
 
 #region Get new disk online and format it -->
 $local_disks = Get-Disk | where {$_.PartitionStyle -eq 'RAW'}
+
+if ($null -eq $local_disks)
+{
+    Write-Error "There is no new disk attached to this VM"
+    throw "There is no new disk attached to this VM"
+}
+if ($local_disks.Count -ne 1)
+{
+    $local_disks | FT -AutoSize
+    Write-Error "Only one new disk should be attached to the VM"
+    throw "Only one new disk should be attached to the VM"
+}
+
 foreach($local_disk in $local_disks)
 {
     [string]$diskP_SSDDiskLetterOnly = $diskP_SSDDisk.Replace(':','')
