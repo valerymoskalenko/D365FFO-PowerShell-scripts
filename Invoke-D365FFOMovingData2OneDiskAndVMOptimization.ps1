@@ -352,6 +352,9 @@ Register-ScheduledJob -Name AXDBOptimizationStartupTask -Trigger $atStartUp -Fil
 # Enable D365 Services
 Get-D365Environment | Set-Service -StartupType Automatic
 
+# Uninstall unnecessary PowerShell modules. Carbon definitely should be removed.
+Uninstall-Module -Name Carbon,RobocopyPS
+
 #region Delete Storage pool -->
 #if it failed, just re-execute whole block again or remove manually from Server Manager --> File and Storage Services --> Volumes --> Storage Pools
 Write-Host 'Removing Storage Pool. Confirm that you are going to remove old disks' -ForegroundColor Yellow
