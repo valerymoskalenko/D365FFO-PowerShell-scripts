@@ -2,13 +2,13 @@ $DevOpsSessionParameters = @{
         Instance            = 'https://dev.azure.com/'
         Collection          = 'Contoso'
         Project             = 'Dynamics365Dev'
-        Account             = 'DynamicsAdmin@contoso.com'
-        PersonalAccessToken = 'taaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaz5ga'
+        Account             = 'dmin@contoso.com'
+        PersonalAccessToken = 'taoaaaaaaaaaaaaaaaaPATbbbbbbbbbbbbbbbbbbbbbb5ga'
     }
 
-$DevOpsFeedName = "D365FO_10.0.17"  #No whitespaces allowed
+$DevOpsFeedName = "D365FO_10.0.17"  #No whitespaces allowed #Please create it manually as Project scoped
 $TempFolder = 'd:\Temp\' + $DevOpsFeedName
-$SASLinks = @(  #Copy from LCS SAS links here in any order. Please note starting from 10.0.18, it should 4 links.
+$SASLinks = @( #Copy from LCS SAS links here in any order. Please note starting from 10.0.18, it should 4 links.
   'https://uswedpl1catalog.blob.core.windows.net/product-ax7productname/84ea2b7f-13d5-4b74-855c-e892fab1d68e/AX7ProductName-12-27-743473ab-8e79-44f7-8d6b-f32ac256d585-84ea2b7f-13d5-4b74-855c-e892fab1d68e?sv=2015-12-11&sr=b&sig=U%2FF2rhmmU6%2BjTaw6DoHRppG1NtN6oU1Ka69X2Pn4ugM%3D&se=2021-04-07T08%3A33%3A15Z&sp=r',
   'https://uswedpl1catalog.blob.core.windows.net/product-ax7productname/11a66aad-e6c4-4113-ba9f-e207d95d3fa5/AX7ProductName-12-27-743473ab-8e79-44f7-8d6b-f32ac256d585-11a66aad-e6c4-4113-ba9f-e207d95d3fa5?sv=2015-12-11&sr=b&sig=X9dMXJbomxZ%2BiSus5h10cJ3JKGcyurRJa%2Bskh9wI3L8%3D&se=2021-04-07T08%3A33%3A40Z&sp=r',
   'https://uswedpl1catalog.blob.core.windows.net/product-ax7productname/ac3f8f34-941d-421c-9b02-9bd859b44b4c/AX7ProductName-12-27-743473ab-8e79-44f7-8d6b-f32ac256d585-ac3f8f34-941d-421c-9b02-9bd859b44b4c?sv=2015-12-11&sr=b&sig=y8%2BpBU%2FhFid7PVYOlkJwM2H8uEQAr5DZxruS%2BV%2B4IQU%3D&se=2021-04-07T08%3A34%3A03Z&sp=r'
@@ -120,6 +120,14 @@ $contentNuGetConfig | Set-Content -Path $(Join-Path -Path $TFS_Folder -ChildPath
 
 Write-Host "Saving packages.config file in" $TFS_Folder -ForegroundColor Yellow
 $contentNuGetPackagesConfig | Set-Content -Path $(Join-Path -Path $TFS_Folder -ChildPath 'packages.config') -Force
+
+#Removing NuGet Source added above
+Write-Host "Removing NuGet source" $DevOpsFeedName -ForegroundColor Yellow
+cd "C:\Temp\d365fo.tools\NuGet"
+.\nuget sources remove -Name $DevOpsFeedName
+#clear nuget cache
+#nuget locals all -clear
+
 
 #Updating project file
 $TFS_ProjectFile = Join-Path -Path $TFS_FolderWithBuildProject -ChildPath $TFS_ProjectFileName
