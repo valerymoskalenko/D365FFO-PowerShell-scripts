@@ -103,6 +103,61 @@ Add-MpPreference -ExclusionProcess @('Fabric.exe','FabricHost.exe','FabricInstal
 Add-MpPreference -ExclusionProcess @('sqlservr.exe','pgc.exe','labelC.exe','xppc.exe','SyncEngine.exe','xppcAgent.exe','ReportingServicesService.exe','iisexpress.exe')
 Add-MpPreference -ExclusionPath 'C:\Program Files\Microsoft SQL Server\MSSQL13.MSSQLSERVER\MSSQL\Binn'
 Add-D365WindowsDefenderRules
+
+# === https://robscode.onl/d365-devbox-performance-enhancements/
+# visual studio & tools
+Add-MpPreference -ExclusionProcess "C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\Common7\IDE\devenv.exe"
+Add-MpPreference -ExclusionProcess "C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\Common7\IDE\devenv.exe"
+Add-MpPreference -ExclusionProcess "C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\devenv.exe"
+Add-MpPreference -ExclusionProcess "C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe"
+Add-MpPreference -ExclusionProcess "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe"
+Add-MpPreference -ExclusionProcess "C:\Program Files (x86)\MSBuild\14.0\Bin\MSBuild.exe"
+Add-MpPreference -ExclusionProcess "C:\Program Files\dotnet\dotnet.exe"
+# customize path for cloud maschines
+Add-MpPreference -ExclusionProcess "C:\AOSService\PackagesLocalDirectory\Bin\xppc.exe"
+Add-MpPreference -ExclusionProcess "C:\AOSService\PackagesLocalDirectory\Bin\xppfagen.exe"
+Add-MpPreference -ExclusionProcess "C:\AOSService\PackagesLocalDirectory\Bin\xppbp.exe"
+Add-MpPreference -ExclusionProcess "C:\AOSService\PackagesLocalDirectory\Bin\SysTestConsole.exe"
+Add-MpPreference -ExclusionProcess "C:\AOSService\PackagesLocalDirectory\Bin\xppcAgent.exe"
+Add-MpPreference -ExclusionProcess "C:\AOSService\PackagesLocalDirectory\Bin\SyncEngine.exe"
+Add-MpPreference -ExclusionProcess "C:\AOSService\PackagesLocalDirectory\Bin\SCDPBundleInstall.exe"
+Add-MpPreference -ExclusionProcess "C:\AOSService\PackagesLocalDirectory\Bin\reportsc.exe"
+Add-MpPreference -ExclusionProcess "C:\AOSService\PackagesLocalDirectory\Bin\pgc.exe"
+Add-MpPreference -ExclusionProcess "C:\AOSService\PackagesLocalDirectory\Bin\LabelC.exe"
+Add-MpPreference -ExclusionProcess "C:\AOSService\PackagesLocalDirectory\Bin\AXUtil.exe"
+Add-MpPreference -ExclusionProcess "C:\AOSService\PackagesLocalDirectory\Bin\AxReportVmRoleStartupTask.exe"
+Add-MpPreference -ExclusionProcess "C:\AOSService\PackagesLocalDirectory\Bin\AdminUserProvisioning.exe"
+Add-MpPreference -ExclusionProcess "C:\AOSService\webroot\bin\Batch.exe"
+# add SQLServer
+Add-MpPreference -ExclusionProcess "C:\Program Files\Microsoft SQL Server\130\LocalDB\Binn\sqlservr.exe"
+Add-MpPreference -ExclusionProcess "C:\Program Files\Microsoft SQL Server\MSSQL13.MSSQLSERVER\MSSQL\Binn\sqlservr.exe"
+
+# add other folders
+Add-MpPreference -ExclusionPath "C:\AOSService\PackagesLocalDirectory"
+Add-MpPreference -ExclusionPath "C:\AOSService\webroot"
+
+# cache folders
+Add-MpPreference -ExclusionPath "C:\Program Files (x86)\Microsoft Visual Studio 10.0"
+Add-MpPreference -ExclusionPath "C:\Program Files (x86)\Microsoft Visual Studio 14.0"
+Add-MpPreference -ExclusionPath "C:\Program Files (x86)\Microsoft Visual Studio"
+Add-MpPreference -ExclusionPath "C:\Windows\assembly"
+Add-MpPreference -ExclusionPath "C:\Windows\Microsoft.NET"
+Add-MpPreference -ExclusionPath "C:\Program Files (x86)\MSBuild"
+Add-MpPreference -ExclusionPath "C:\Program Files\dotnet"
+Add-MpPreference -ExclusionPath "C:\Program Files (x86)\Microsoft SDKs"
+Add-MpPreference -ExclusionPath "C:\Program Files\Microsoft SDKs"
+Add-MpPreference -ExclusionPath "C:\Program Files (x86)\Common Files\Microsoft Shared\MSEnv"
+Add-MpPreference -ExclusionPath "C:\Program Files (x86)\Microsoft Office"
+Add-MpPreference -ExclusionPath ""
+Add-MpPreference -ExclusionPath "C:\ProgramData\Microsoft\VisualStudio\Packages"
+Add-MpPreference -ExclusionPath "C:\Program Files (x86)\Microsoft SDKs\NuGetPackages"
+Add-MpPreference -ExclusionPath "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files"
+Add-MpPreference -ExclusionPath "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\Temporary ASP.NET Files"
+Add-MpPreference -ExclusionPath "C:\Users\Administrator\AppData\Local\Microsoft\VisualStudio"
+Add-MpPreference -ExclusionPath "C:\Users\Administrator\AppData\Local\Microsoft\WebsiteCache"
+Add-MpPreference -ExclusionPath "C:\Users\Administrator\AppData\Roaming\Microsoft\VisualStudio"
+# ===
+
 #endregion Configure Windows Defender -->
 
 #region SQL Server settings <--
