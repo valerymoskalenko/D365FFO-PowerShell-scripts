@@ -299,21 +299,22 @@ choco install GoogleChrome, Far, 7zip
 #endregion Downloading Chrome browser -->
 
 #region Fix Trace Parser <--
-Write-Host "Fix Trace Parser" -ForegroundColor Yellow
+# Unfortunately, it doesn't work since 10.0.17 VM
+#Write-Host "Fix Trace Parser" -ForegroundColor Yellow
 #https://sinedax.blogspot.com/2018/12/trace-parser-doesnt-work-dynamics-365.html
-$resourcefiledir = "C:\AOSService\webroot"
-$inputmanfile = "C:\AOSService\webroot\Monitoring\DynamicsAXExecutionTraces.man"
-$outputmanfile = "C:\AOSService\webroot\Monitoring\DynamicsAXExecutionTraces_copy.man"
-$temp = Get-Content $inputmanfile
-$temp = $temp -replace "%APPROOT%",$resourcefiledir
-$temp | out-file $outputmanfile
-wevtutil im $outputmanfile
-$inputmanfile = "C:\AOSService\webroot\Monitoring\DynamicsAXXppExecutionTraces.man"
-$outputmanfile = "C:\AOSService\webroot\Monitoring\DynamicsAXXppExecutionTraces_copy.man"
-$temp = Get-Content $inputmanfile
-$temp = $temp -replace "%APPROOT%",$resourcefiledir
-$temp | out-file $outputmanfile
-wevtutil im $outputmanfile
+#$resourcefiledir = "C:\AOSService\webroot"
+#$inputmanfile = "C:\AOSService\webroot\Monitoring\DynamicsAXExecutionTraces.man"
+#$outputmanfile = "C:\AOSService\webroot\Monitoring\DynamicsAXExecutionTraces_copy.man"
+#$temp = Get-Content $inputmanfile
+#$temp = $temp -replace "%APPROOT%",$resourcefiledir
+#$temp | out-file $outputmanfile
+#wevtutil im $outputmanfile
+#$inputmanfile = "C:\AOSService\webroot\Monitoring\DynamicsAXXppExecutionTraces.man"
+#$outputmanfile = "C:\AOSService\webroot\Monitoring\DynamicsAXXppExecutionTraces_copy.man"
+#$temp = Get-Content $inputmanfile
+#$temp = $temp -replace "%APPROOT%",$resourcefiledir
+#$temp | out-file $outputmanfile
+#wevtutil im $outputmanfile
 #endregion Fix Trace Parser -->
 
 #region Disable Telemetry (requires a reboot to take effect) <--
