@@ -95,8 +95,8 @@ Install-Module -Name dbatools -SkipPublisherCheck -Scope AllUsers
 Write-Host "Configure Windows Defender" -ForegroundColor Yellow
 Import-Module Defender
 Add-MpPreference -ExclusionExtension '*.mdf', '*.ldf', '*.xml', '*.rdl', '*.md'
-Add-MpPreference -ExclusionPath 'C:\ProgramData\sf'
-Add-MpPreference -ExclusionPath 'C:\Program Files\Microsoft Service Fabric\bin'
+#Add-MpPreference -ExclusionPath 'C:\ProgramData\sf'
+#Add-MpPreference -ExclusionPath 'C:\Program Files\Microsoft Service Fabric\bin'
 Add-MpPreference -ExclusionPath 'C:\AosService\PackagesLocalDirectory\Bin','K:\AosService\PackagesLocalDirectory\Bin'
 Add-MpPreference -ExclusionProcess @('Fabric.exe','FabricHost.exe','FabricInstallerService.exe','FabricSetup.exe','FabricDeployer.exe',
     'ImageBuilder.exe','FabricGateway.exe','FabricDCA.exe','FabricFAS.exe','FabricUOS.exe','FabricRM.exe','FileStoreService.exe')
