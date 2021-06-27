@@ -1,12 +1,12 @@
 #https://github.com/valerymoskalenko/D365FFO-PowerShell-scripts/blob/master/Invoke-D365FFOAxDBRestoreFromBAK.ps1
 [string]$dt = get-date -Format "yyyyMMdd_HHmmss" #Generate the datetime stamp to make DB files unique
 
-#If you are going to download BACPAC file from the LCS Asset Library, please use in this section
+#If you are going to download BAK file from the LCS Asset Library either Azure Blob Storage, please use in this section
 $BacpacSasLinkFromLCS = 'https://ctssqlbackup.blob.core.windows.net/fs3main-10/FS3Main-10_2021-01-25_083223.bak?sp=r&st=2021-01-26T07:40:21Z&se=2021-01-26T15:40:21Z&spr=https&sv=2019-12-12&sr=b&sig=15%2ByPW000000000000000lJYA%3D'
 $dbName = 'CTSMain' #Any Meaningful name. Original Environment name, Project name, ... No spaces in the name!
-$TempFolder = 'd:\temp\' # 'c:\temp\'  #$env:TEMP
+$TempFolder = 'd:\temp\' # 'c:\temp\'  #$env:TEMP  #Path to Temp folder
 
-#If you are NOT going to download BACPAC file from the LCS Asset Library, please use in this section
+#If you are NOT going to download BAK file from the LCS Asset Library, please use in this section
 #$BacpacSasLinkFromLCS = ''
 #$f = Get-ChildItem D:\temp\AxDB_GWTest_20201021.bak  #Please note that this file should be accessible from SQL server service account
 #$dbName = $($f.BaseName).Replace(' ','_') + $dt # $f.BaseName  #'AxDB_CTS1005BU2'  #Temporary Database name for new AxDB. Use a file name or any meaningful name.
@@ -72,10 +72,11 @@ Rename-DbaDatabase -SqlInstance localhost -Database $dbName -LogicalName "$($f.B
 #Backup-DbaDatabase -SqlInstance localhost -Database AxDB -Type Full -CompressBackup -BackupFileName dbname-1005_original-backuptype-timestamp.bak -ReplaceInName
 
 #Remove AxDB_Original database, if it exists
-Write-Host "Switching databases" -ForegroundColor Yellow
+Write-Host "Removing old original database" -ForegroundColor Yellow
 Remove-D365Database -DatabaseName AxDB_original
 
 #Switch AxDB   AxDB_original <-- AxDB <-- AxDB_NEW
+Write-Host "Switching databases" -ForegroundColor Yellow
 Switch-D365ActiveDatabase -NewDatabaseName $dbName
 
 ## Enable SQL Change Tracking
