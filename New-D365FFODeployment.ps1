@@ -1,5 +1,7 @@
 $f = Get-ChildItem C:\temp\All81BinaryUpdates_4_4.zip  #Please update this path
 #############################################
+## https://github.com/valerymoskalenko/D365FFO-PowerShell-scripts/blob/master/New-D365FFODeployment.ps1
+
 $ErrorActionPreference = "Stop"
 #region Installing d365fo.tools  <--
 # This is requried by Find-Module, by doing it beforehand we remove some warning messages
