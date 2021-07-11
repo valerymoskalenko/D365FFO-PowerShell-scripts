@@ -66,7 +66,12 @@ Optimization for LCS-controlled Azure VM (Cloud-hosted environments only)
 - Start VM and do a smoke test on the environment
 - Delete old detached disks from Azure Storage
 
+Please note that this script has the known bug. It moves only pre-defined database-related files. Thus, you may loose fresh deployed database. 
+However, on mew-created VMs it should be OK. In any case, please make sure that you have copied all database-related files (mdf and ldf)
 
 # Test-D365FOLabelsFromCheckins.ps1
 Find missing labels between Latest checked-in Label file and all versions of the same Label file.
 It download all versions of Label file from DevOps. Store them. Then compare with the latest version in order to find any missing label Ids
+
+# New-D365FFODeployment.ps1
+Script to deploy a Deployable Package to DEV envrionment.
