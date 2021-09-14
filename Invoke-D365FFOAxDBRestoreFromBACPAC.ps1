@@ -36,7 +36,7 @@ foreach($module in  $modules2Install)
 #endregion Installing d365fo.tools and dbatools -->
 
 #region Download bacpac from LCS
-if (($null -ne $BacpacSasLinkFromLCS) -or ($BacpacSasLinkFromLCS -ne ''))
+if ($BacpacSasLinkFromLCS.StartsWith('http'))
 {
     Write-Host "Downloading BACPAC from the LCS Asset library" -ForegroundColor Yellow
     New-Item -Path $TempFolder -ItemType Directory -Force
