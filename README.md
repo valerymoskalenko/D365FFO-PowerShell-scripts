@@ -42,7 +42,7 @@ Optimization for LCS-controlled Azure VM (Cloud-hosted environments only)
 - Deploy new VM through LCS
    - Tier 1 only. Cloud-hosted on your Azure subscription
    - Set 2,4, or any disks
-   - Set it to Premium SSD, Managed
+   - Set it to Premium SSD, Managed or Standard HDD
 - Wait for deployment completion
 - Add a new Standard SSD to your LCS Azure VM
 - Open the Remote Desktop Connection and execute this PowerShell script. 
