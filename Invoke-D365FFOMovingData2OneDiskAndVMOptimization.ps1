@@ -72,9 +72,9 @@ $mssql = Get-WmiObject -Query "SELECT * FROM Win32_Service WHERE Name = '$sServi
 Write-Host 'Adding' $mssqlServiceUser 'service account to local Administrators group' -ForegroundColor Yellow
 Add-LocalGroupMember -Group 'Administrators' -Member $mssqlServiceUser
 Get-LocalGroupMember -Group 'Administrators' | FT
-Grant-Privilege -Identity $mssqlServiceUser -Privilege SeImpersonatePrivilege -Verbose
-Grant-Privilege -Identity $mssqlServiceUser -Privilege SeLockMemoryPrivilege -Verbose
-Grant-Privilege -Identity $mssqlServiceUser -Privilege SeManageVolumePrivilege -Verbose
+Grant-CPrivilege -Identity $mssqlServiceUser -Privilege SeImpersonatePrivilege -Verbose
+Grant-CPrivilege -Identity $mssqlServiceUser -Privilege SeLockMemoryPrivilege -Verbose
+Grant-CPrivilege -Identity $mssqlServiceUser -Privilege SeManageVolumePrivilege -Verbose
 #endregion Adding sql service account to the local Administrator group -->
 
 #region General SQL Server settings <--
@@ -112,10 +112,10 @@ $SQLScriptMoveTempDB = @'
     ALTER DATABASE tempdb MODIFY FILE (NAME = N'tempdev2', FILENAME = 'D:\d365fo_tempdb2.mdf',size = 2GB, FILEGROWTH = 512MB);
     ALTER DATABASE tempdb MODIFY FILE (NAME = N'tempdev3', FILENAME = 'D:\d365fo_tempdb3.mdf',size = 2GB, FILEGROWTH = 512MB);
     ALTER DATABASE tempdb MODIFY FILE (NAME = N'tempdev4', FILENAME = 'D:\d365fo_tempdb4.mdf',size = 2GB, FILEGROWTH = 512MB);
-    ALTER DATABASE tempdb MODIFY FILE (NAME = N'tempdev5', FILENAME = 'D:\d365fo_tempdb5.mdf',size = 2GB, FILEGROWTH = 512MB);
-    ALTER DATABASE tempdb MODIFY FILE (NAME = N'tempdev6', FILENAME = 'D:\d365fo_tempdb6.mdf',size = 2GB, FILEGROWTH = 512MB);
-    ALTER DATABASE tempdb MODIFY FILE (NAME = N'tempdev7', FILENAME = 'D:\d365fo_tempdb7.mdf',size = 2GB, FILEGROWTH = 512MB);
-    ALTER DATABASE tempdb MODIFY FILE (NAME = N'tempdev8', FILENAME = 'D:\d365fo_tempdb8.mdf',size = 2GB, FILEGROWTH = 512MB);
+    -- ALTER DATABASE tempdb MODIFY FILE (NAME = N'tempdev5', FILENAME = 'D:\d365fo_tempdb5.mdf',size = 2GB, FILEGROWTH = 512MB);
+    -- ALTER DATABASE tempdb MODIFY FILE (NAME = N'tempdev6', FILENAME = 'D:\d365fo_tempdb6.mdf',size = 2GB, FILEGROWTH = 512MB);
+    -- ALTER DATABASE tempdb MODIFY FILE (NAME = N'tempdev7', FILENAME = 'D:\d365fo_tempdb7.mdf',size = 2GB, FILEGROWTH = 512MB);
+    -- ALTER DATABASE tempdb MODIFY FILE (NAME = N'tempdev8', FILENAME = 'D:\d365fo_tempdb8.mdf',size = 2GB, FILEGROWTH = 512MB);
 GO
 '@
 Invoke-DbaQuery -SqlInstance localhost -Database master -Query $SQLScriptMoveTempDB
@@ -154,8 +154,8 @@ foreach($database in @('AxDB','AxDW','DynamicsAxReportServer','DynamicsAxReportS
 #Read more: https://www.sharepointdiary.com/2017/06/change-sql-server-database-initial-size-auto-growth-settings-using-powershell.html#ixzz6LZFf2mHH
 }
 
-Write-Host 'SQL Performance optimization: Shrink all user Databases (10 minutes)' -ForegroundColor Yellow
-Invoke-DbaDbShrink -SqlInstance localhost -AllUserDatabases -ExcludeDatabase DYNAMICSXREFDB -Verbose
+#Write-Host 'SQL Performance optimization: Shrink all user Databases (10 minutes)' -ForegroundColor Yellow
+#Invoke-DbaDbShrink -SqlInstance localhost -AllUserDatabases -ExcludeDatabase DYNAMICSXREFDB -Verbose
 #endregion SQL Databases optimization: Set grow step and Execute DB Shrink <--
 
 #region Detach all D365FO SQL Databases <--
@@ -354,6 +354,8 @@ Get-D365Environment | Set-Service -StartupType Automatic
 
 # Uninstall unnecessary PowerShell modules. Carbon definitely should be removed.
 Uninstall-Module -Name Carbon,RobocopyPS
+#If it generates the error "module 'Carbon' is currently in use." then please execute this uninstall command in the separate PowerShell window
+#Please note if you skip Carbon module uninstallation, then you will get issues with LCS Deployments
 
 #region Delete Storage pool -->
 #if it failed, just re-execute whole block again or remove manually from Server Manager --> File and Storage Services --> Volumes --> Storage Pools
