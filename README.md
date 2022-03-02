@@ -75,3 +75,7 @@ It download all versions of Label file from DevOps. Store them. Then compare wit
 
 # New-D365FFODeployment.ps1
 Script to deploy a Deployable Package to DEV envrionment.
+
+# DEV - 10.0.24.json
+Sample Build pipeline for Azure DevOps
+Please do not forget to install Dynamics 365 Finance and Operations Tools https://marketplace.visualstudio.com/items?itemName=Dyn365FinOps.dynamics365-finops-tools
