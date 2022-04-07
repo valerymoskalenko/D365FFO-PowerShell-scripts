@@ -352,16 +352,16 @@ Register-ScheduledJob -Name AXDBOptimizationStartupTask -Trigger $atStartUp -Fil
 # Enable D365 Services
 Get-D365Environment | Set-Service -StartupType Automatic
 
-# Uninstall unnecessary PowerShell modules. Carbon definitely should be removed.
-Uninstall-Module -Name Carbon,RobocopyPS
-#If it generates the error "module 'Carbon' is currently in use." then please execute this uninstall command in the separate PowerShell window
-#Please note if you skip Carbon module uninstallation, then you will get issues with LCS Deployments
-
 #region Delete Storage pool -->
 #if it failed, just re-execute whole block again or remove manually from Server Manager --> File and Storage Services --> Volumes --> Storage Pools
 Write-Host 'Removing Storage Pool. Confirm that you are going to remove old disks' -ForegroundColor Yellow
 Get-VirtualDisk -FriendlyName 'Pool0' | Remove-VirtualDisk -Verbose
 Get-StoragePool -IsPrimordial $false | Remove-StoragePool -Verbose
 #endregion Delete Storage pool <--
+
+# Uninstall unnecessary PowerShell modules. Carbon definitely should be removed.
+Uninstall-Module -Name Carbon,RobocopyPS
+#If it generates the error "module 'Carbon' is currently in use." then please execute this uninstall command in the separate PowerShell window
+#Please note if you skip Carbon module uninstallation, then you will get issues with LCS Deployments
 
 Write-Host 'Finished. Please stop VM and remove old disks' -ForegroundColor Green
