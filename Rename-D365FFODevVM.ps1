@@ -373,6 +373,10 @@ if ($disableMR) {
 }
 #endregion Stop and Disable Management Reporter Service -->
 
+#Extra setup for 10.0.24 and later
+Write-Host "Please open the following link and make configuration, if you have VHD version 10.0.24 and later" -ForegroundColor Yellow
+Write-Host "https://docs.microsoft.com/en-us/dynamics365/fin-ops-core/dev-itpro/dev-tools/vhd-setup" -ForegroundColor Yellow
+
 #Rename and restart
 Write-Host "Rename and restart" -ForegroundColor Yellow
 Rename-Computer -NewName $NewComputerName -Restart
