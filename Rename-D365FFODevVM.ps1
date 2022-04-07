@@ -87,8 +87,8 @@ Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope AllU
 Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
 
 # Installing PowerShell modules d365fo.tools and dbatools
-Install-Module -Name d365fo.tools -SkipPublisherCheck -Scope AllUsers
-Install-Module -Name dbatools -SkipPublisherCheck -Scope AllUsers
+Install-Module -Name d365fo.tools -SkipPublisherCheck -Scope AllUsers -AllowClobber
+Install-Module -Name dbatools -SkipPublisherCheck -Scope AllUsers -AllowClobber
 #endregion Installing d365fo.tools and dbatools -->
 
 #region Configure Windows Defender <--
