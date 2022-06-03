@@ -5,7 +5,7 @@
 
 #If you are going to download BACPAC file from the LCS Asset Library, please use in this section
 $BacpacSasLinkFromLCS = 'https://uswedpl1catalog.blob.core.windows.net/product-financeandoperations/000f0000-1111-2222-3333-b0000280893a/FinanceandOperations-AX7ProductVersion-17-b89a7d24-1111-2222-3333-ecfe94e9ea9f-8fffcb0a-5555-6666-7777-b0000280893a?sv=2015-12-11&sr=b&sig=rTGkfdfIIJyv0EBl%2FlIiugN3567745674567xMrrmkAE%3D&se=2021-01-26T09%3A51%3A27Z&sp=r'
-$NewDB = 'CTS_20210122' #Database name. No spaces in the name!
+$NewDB = 'CTS_20210122' #Database name. No spaces in the name! Do not put here AxDB!
 $TempFolder = 'd:\temp\' # 'c:\temp\'  #$env:TEMP
 
 #If you are NOT going to download BACPAC file from the LCS Asset Library, please use in this section
