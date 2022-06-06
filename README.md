@@ -79,3 +79,8 @@ Script to deploy a Deployable Package to DEV envrionment.
 # DEV - 10.0.24.json
 Sample Build pipeline for Azure DevOps
 Please do not forget to install Dynamics 365 Finance and Operations Tools https://marketplace.visualstudio.com/items?itemName=Dyn365FinOps.dynamics365-finops-tools
+
+# Add-D365FOUsers.ps1
+Sample PowerShell script to add users to the environment.
+It would be better to use this script instead of trying to use Admin Provisioning tool
+
