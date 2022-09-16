@@ -1,3 +1,4 @@
+# https://github.com/valerymoskalenko/D365FFO-PowerShell-scripts/blob/master/Add-D365FOUsers.ps1
 $AccountList = @("john.doe@ciellos.com", "Maria.Ivanova@ciellos.com", "test@ciellos.com") #Add more emails to the list
 $DefaultDataAreaId = 'USMF' #Update default company if it necessary
 
