@@ -189,10 +189,10 @@ Write-Host 'Stopping monitoring and diagnostics services' -ForegroundColor Yello
 Get-Service DiagTrack,Dmwappushservice,MR2012ProcessService,LCSDiagnosticClientService -ErrorAction SilentlyContinue | Stop-Service -Force -Verbose
 
 Write-Host '..Stopping Monitoring Agent ETW sessions...' -ForegroundColor Yellow
-& K:\Monitoring\MonitoringInstall\MonitoringInstall.exe /stopsessions /log:K:\Monitoring\MonitoringInstall\Stopsessions.log /append
+& K:\AosService\PackagesLocalDirectory\Plugins\Monitoring\MonitoringInstall.exe /stopsessions /log:K:\AosService\PackagesLocalDirectory\Plugins\Monitoring\Stopsessions.log /append
 
 Write-Host '..Stopping Monitoring Agent processes...' -ForegroundColor Yellow
-& K:\Monitoring\MonitoringInstall\MonitoringInstall.exe /stopagentlauncher /id:SingleAgent /log:K:\Monitoring\MonitoringInstall\StopAgentLauncher.log /append /agentDirectory:K:\Monitoring\MonitoringInstall /rootdatadir:K:\MonAgentData
+& K:\AosService\PackagesLocalDirectory\Plugins\Monitoring\MonitoringInstall.exe /stopagentlauncher /id:SingleAgent /log:K:\AosService\PackagesLocalDirectory\Plugins\Monitoring\StopAgentLauncher.log /append /agentDirectory:K:\AosService\PackagesLocalDirectory\Plugins\Monitoring /rootdatadir:K:\MonAgentData
 
 #Stop D365 environment again
 Write-Host 'Stopping and disabling all FSCM services' -ForegroundColor Yellow
