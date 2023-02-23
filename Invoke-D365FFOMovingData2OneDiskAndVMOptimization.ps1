@@ -273,6 +273,10 @@ Get-Partition -DriveLetter $diskK_ServiceVolume.Replace(':','') | Set-Partition 
 Get-Partition -DriveLetter $diskP_SSDDisk.Replace(':','') | Set-Partition -NewDriveLetter $diskK_ServiceVolume.Replace(':','') -Verbose
 #endregion Renaming disks <--
 
+#region Fix registry value -->
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Dynamics\AX\7.0\SDK" -Name "BackupPath" -Value "$diskK_ServiceVolume\DynamicsBackup"
+#endregion Fix registry value <--
+
 #region Attach SQL Databases -->
 Write-Host 'Start SQL Services back' -ForegroundColor Yellow
 Start-DbaService
