@@ -101,6 +101,26 @@ TRUNCATE TABLE BATCHSERVERGROUP
 "@
 Invoke-DbaQuery -SqlInstance localhost -Database AxDB -Query $sqlSysTablesTruncate
 
+#fix retail users
+$fixDBusers = @"
+use AxDB;
+DROP USER IF EXISTS [axdeployextuser];
+DROP USER IF EXISTS [axretaildatasyncuser];
+DROP USER IF EXISTS [axretailruntimeuser];
+DROP USER IF EXISTS [axdbadmin];
+GO
+CREATE USER [axdeployextuser] FROM LOGIN [axdeployextuser];
+CREATE USER [axdbadmin] FROM LOGIN [axdbadmin];
+CREATE USER [axretaildatasyncuser] FROM LOGIN [axretaildatasyncuser];
+CREATE USER [axretailruntimeuser] FROM LOGIN [axretailruntimeuser];
+EXEC sp_addrolemember 'db_owner', 'axdeployextuser';
+EXEC sp_addrolemember 'db_owner', 'axdbadmin';
+EXEC sp_addrolemember 'db_owner', 'axretaildatasyncuser';
+EXEC sp_addrolemember 'db_owner', 'axretailruntimeuser';
+GO
+"@
+Invoke-DbaQuery -SqlInstance localhost -Database AxDB -Query $fixDBusers
+
 ## INFO: get Admin email address/tenant
 Write-Host "Getting information about tenant and admin account from AxDB" -ForegroundColor Yellow
 Invoke-DbaQuery -SqlInstance localhost -Database AxDB -Query "Select ID, Name, NetworkAlias from UserInfo where ID = 'Admin'" | FT
