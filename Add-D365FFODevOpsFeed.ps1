@@ -6,7 +6,7 @@ $DevOpsSessionParameters = @{
         PersonalAccessToken = 'taoaaaaaaaaaaaaaaaaPATbbbbbbbbbbbbbbbbbbbbbb5ga'
     }
 
-$DevOpsFeedName = "D365FO_10.0.17"  #No whitespaces allowed #Please create it manually as Project scoped
+$DevOpsFeedName = "D365FO_10.0.33"  #No whitespaces allowed #Please create it manually as Project scoped
 $TempFolder = 'd:\Temp\' + $DevOpsFeedName
 $SASLinks = @( #Copy from LCS SAS links here in any order. Please note starting from 10.0.18, it should 4 links.
   'https://uswedpl1catalog.blob.core.windows.net/product-ax7productname/84ea2b7f-13d5-4b74-855c-e892fab1d68e/AX7ProductName-12-27-743473ab-8e79-44f7-8d6b-f32ac256d585-84ea2b7f-13d5-4b74-855c-e892fab1d68e?sv=2015-12-11&sr=b&sig=U%2FF2rhmmU6%2BjTaw6DoHRppG1NtN6oU1Ka69X2Pn4ugM%3D&se=2021-04-07T08%3A33%3A15Z&sp=r',
@@ -45,6 +45,7 @@ foreach ($module in $modules2Install) {
 #endregion Installing powershell modules -->
 Invoke-D365InstallAzCopy -Verbose
 Invoke-D365InstallNuget -Verbose
+Enable-D365Exception -Verbose
 
 cd "C:\Temp\d365fo.tools\NuGet"
 $SoourcePath = "https://pkgs.dev.azure.com/$($DevOpsSessionParameters.Collection)/$($DevOpsSessionParameters.Project)/_packaging/$DevOpsFeedName/nuget/v3/index.json"
@@ -85,7 +86,7 @@ ForEach($SASLink in $SASLinks)
 
 #Upload NuGet package to Azure DevOps feed
     Write-Host "..Uploading file " $TempFileName -ForegroundColor Yellow
-    Invoke-D365AzureDevOpsNugetPush -Path $TempFileName -source $DevOpsFeedName -ShowOriginalProgress
+    Invoke-D365AzureDevOpsNugetPush -Path $TempFileName -source $DevOpsFeedName -Verbose -EnableException
     $counter = $counter + 1
 
 #Get details about NuGet package
