@@ -61,6 +61,8 @@ Enable-D365Exception -Verbose
 Invoke-D365InstallSqlPackage  #Installing modern SqlPackage just in case
 
 ## Import bacpac to SQL Database
+#Trust SqlServer Certificate
+Set-DbatoolsConfig -FullName 'sql.connection.trustcert' -Value $true -Register
 If (-not (Test-DbaPath -SqlInstance localhost -Path $($f.FullName)))
 {
     Write-Warning "Database file $($f.FullName) could not be found by SQL Server. Try to move it to C:\Temp or D:\Temp"
