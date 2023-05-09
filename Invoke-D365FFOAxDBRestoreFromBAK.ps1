@@ -56,6 +56,8 @@ if ($BacpacSasLinkFromLCS.StartsWith('http'))
 
 ## Restore New Database to SQL Server. Database name is AxDB_NEW
 Write-Host "Restoring new Database" -ForegroundColor Yellow
+#Trust SqlServer Certificate
+Set-DbatoolsConfig -FullName 'sql.connection.trustcert' -Value $true -Register
 #$f = Get-ChildItem C:\users\Admind9fca084f4\Downloads\AxDB_CTS-1005-BU2-202005051340.bak  #Please note that this file should be accessible from SQL server service account
 If (-not (Test-DbaPath -SqlInstance localhost -Path $($f.FullName)))
 {
