@@ -70,7 +70,7 @@ net accounts /maxpwage:unlimited
 Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
 
 #Set Chocolatey Safe Switch
-chocolatey feature enable -n allowGlobalConfirmation
+choco feature enable -n allowGlobalConfirmation
 
 #Install Nartac SSL
 choco install iiscrypto-cli
