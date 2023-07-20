@@ -377,6 +377,11 @@ if ($disableMR) {
 }
 #endregion Stop and Disable Management Reporter Service -->
 
+#region Add D365FnO URL to the IE and Edge favourites <--
+$FnOURL = Get-D365Url
+Set-D365FavoriteBookmark -Url $FnOURL.Url -D365FO
+#region Add D365FnO URL to the IE and Edge favourites -->
+
 #Extra setup for 10.0.24 and later
 Write-Host "Please open the following link and make configuration, if you have VHD version 10.0.24 and later" -ForegroundColor Yellow
 Write-Host "https://docs.microsoft.com/en-us/dynamics365/fin-ops-core/dev-itpro/dev-tools/vhd-setup" -ForegroundColor Yellow
