@@ -25,6 +25,11 @@ Stop-D365Environment -All
 Add-D365WindowsDefenderRules  #Add Defender Rules to improve performance
 #endregion Shutdown D365FO and Apply Defender rules -->
 
+#region Apply SQL Connection settings <--
+Set-DbatoolsConfig -FullName sql.connection.trustcert -Value $true 
+Set-DbatoolsConfig -FullName sql.connection.encrypt -Value $false
+#endregion Apply SQL Connection settings -->
+
 #region Default values for Variables<--
 [string]$diskK_ServiceVolume = (Get-Volume -FileSystemLabel 'Service Volume').DriveLetter + ':';
 if ($null -eq $diskK_ServiceVolume) {$diskK_ServiceVolume = 'K:'}
