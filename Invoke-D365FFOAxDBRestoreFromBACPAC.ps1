@@ -52,6 +52,11 @@ if ($BacpacSasLinkFromLCS.StartsWith('http'))
 }
 #endregion Download bacpac from LCS
 
+#region Apply SQL Connection settings <--
+Set-DbatoolsConfig -FullName sql.connection.trustcert -Value $true 
+Set-DbatoolsConfig -FullName sql.connection.encrypt -Value $false
+#endregion Apply SQL Connection settings -->
+
 ## Stop D365FO instance.
 ## Optional. You may Import bacpac while D365FO is up and running
 ## Stopping of D365FO will just improve performance / RAM Memory consumption
