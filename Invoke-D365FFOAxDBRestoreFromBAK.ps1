@@ -33,6 +33,11 @@ foreach($module in  $modules2Install)
 }
 #endregion Installing d365fo.tools and dbatools -->
 
+#region Apply SQL Connection settings <--
+Set-DbatoolsConfig -FullName sql.connection.trustcert -Value $true 
+Set-DbatoolsConfig -FullName sql.connection.encrypt -Value $false
+#endregion Apply SQL Connection settings -->
+
 ## Stop D365FO instance
 Write-Host "Stopping D365FO environment" -ForegroundColor Yellow
 Stop-D365Environment | FT
