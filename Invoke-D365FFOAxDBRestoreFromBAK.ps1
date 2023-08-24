@@ -70,7 +70,7 @@ If (-not (Test-DbaPath -SqlInstance localhost -Path $($f.FullName)))
     throw "Database file $($f.FullName) could not be found by SQL Server. Try to move it to C:\Temp"
 }
 $f | Unblock-File
-$f | Restore-DbaDatabase -SqlInstance localhost -DatabaseName $dbName -ReplaceDbNameInFile -Verbose
+$f | Restore-DbaDatabase -SqlInstance localhost -DatabaseName $dbName -ReplaceDbNameInFile -DestinationFileSuffix $dt -Verbose
 Rename-DbaDatabase -SqlInstance localhost -Database $dbName -LogicalName "$($f.BaseName)_<FT>"
 
 ## (Optional) Backup current AxDB just in case. You can find this DB as AxDB_original.
