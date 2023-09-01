@@ -75,7 +75,9 @@ If (-not (Test-DbaPath -SqlInstance localhost -Path $($f.FullName)))
 }
 $f | Unblock-File
 Write-Host "Import BACPAC file to the SQL database" $NewDB -ForegroundColor Yellow
+New-DbaDatabase -SqlInstance localhost -Name $NewDB #-RecoveryModel Simple
 Import-D365Bacpac -ImportModeTier1 -BacpacFile $f.FullName -NewDatabaseName $NewDB -ShowOriginalProgress -Verbose
+#Use this script if you have AutoDrop issue:  https://gist.github.com/FH-Inway/f485c720b43b72bffaca5fb6c094707e
 
 ## Removing AxDB_orig database and Switching AxDB:   NULL <-1- AxDB_original <-2- AxDB <-3- [NewDB]
 Write-Host "Stopping D365FO environment and Switching Databases" -ForegroundColor Yellow
