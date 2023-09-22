@@ -93,7 +93,9 @@ Write-Host "Clean up tables directly from BACPAC file" $($f.FullName) -Foregroun
 "dbo.SYSENCRYPTIONLOG","dbo.SYSOUTGOINGEMAILTABLE","dbo.SECURITYOBJECTHISTORY"
 
 #Remove unnecessary tables
-Clear-D365BacpacTableData -Path $f.FullName -ClearFromSource -Table $Tables2CleanUp
+$ErrorActionPreference = "SilentlyContinue"
+Clear-D365BacpacTableData -Path $f.FullName -ClearFromSource -Table $Tables2CleanUp -Verbose
+$ErrorActionPreference = "Stop"
 #endregion Clean up tables -->
 
 New-DbaDatabase -SqlInstance localhost -Name $NewDB #-RecoveryModel Simple
