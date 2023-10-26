@@ -388,4 +388,4 @@ Write-Host "https://docs.microsoft.com/en-us/dynamics365/fin-ops-core/dev-itpro/
 
 #Rename and restart
 Write-Host "Rename and restart" -ForegroundColor Yellow
-Rename-D365ComputerName - -NewName $NewComputerName -SSRSReportDatabase DynamicsAxReportServer
+Rename-D365ComputerName -NewName $NewComputerName -SSRSReportDatabase DynamicsAxReportServer
