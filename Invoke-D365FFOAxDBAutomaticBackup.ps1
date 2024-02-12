@@ -40,7 +40,7 @@ Set-DbatoolsConfig -FullName sql.connection.encrypt -Value $false
 
 #region Install Az module
 Write-Host "Installing Az module. If you have issues here, please run it on PowerShell CLI - not ISE" -ForegroundColor Yellow
-Install-Module -Name Az.Accounts,Az.Storage -AllowClobber -Scope CurrentUser
+#Install-Module -Name Az.Accounts,Az.Storage -AllowClobber -Scope CurrentUser
 Import-Module -Name Az.Accounts,Az.Storage
 #endregion Install Az module
 	
@@ -139,7 +139,7 @@ Disconnect-AzAccount
 Clear-AzContext -Scope CurrentUser
 
 #Fixing AzureRM and Az modules incompatibility for d365fo.tools
-install-module AzureRM.profile -AllowClobber
-install-module Azure.Storage -AllowClobber
+#install-module AzureRM.profile -AllowClobber
+#install-module Azure.Storage -AllowClobber
 
 
