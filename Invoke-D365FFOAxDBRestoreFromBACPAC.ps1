@@ -190,6 +190,10 @@ Import-D365Bacpac -ImportModeTier1 -BacpacFile $f.FullName -ModelFile $modelFile
 #Import-D365Bacpac -ImportModeTier1 -BacpacFile $f.FullName -NewDatabaseName $NewDB -Verbose
 
 
+## Backup NewDB database (optional)
+Write-Host "Backup $NewDB just in case" -ForegroundColor Yellow
+Backup-DbaDatabase -SqlInstance localhost -Database $NewDB -Type Full -CompressBackup -BackupFileName "dbname-backuptype-timestamp.bak" -ReplaceInName
+
 ## Removing AxDB_orig database and Switching AxDB:   NULL <-1- AxDB_original <-2- AxDB <-3- [NewDB]
 Write-Host "Stopping D365FO environment and Switching Databases" -ForegroundColor Yellow
 Stop-D365Environment
