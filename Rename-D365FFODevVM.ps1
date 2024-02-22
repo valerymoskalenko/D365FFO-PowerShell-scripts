@@ -378,8 +378,8 @@ if ($disableMR) {
 #endregion Stop and Disable Management Reporter Service -->
 
 #region Add D365FnO URL to the IE and Edge favourites <--
-$FnOURL = Get-D365Url
-Set-D365FavoriteBookmark -Url $FnOURL.Url -D365FO
+# $FnOURL = Get-D365Url
+# Set-D365FavoriteBookmark -Url $FnOURL.Url -D365FO
 #region Add D365FnO URL to the IE and Edge favourites -->
 
 #Extra setup for 10.0.24 and later
