@@ -43,6 +43,12 @@ Write-Host "Stopping D365FO environment" -ForegroundColor Yellow
 Stop-D365Environment | FT
 Enable-D365Exception -Verbose
 
+
+## (Optional) Backup current AxDB just in case. You can find this DB as AxDB_original.
+## You can skip this step
+#Write-Host "Backup current AxDB (Optional)" -ForegroundColor Yellow
+#Backup-DbaDatabase -SqlInstance localhost -Database AxDB -Type Full -CompressBackup -BackupFileName dbname-1005_original-backuptype-timestamp.bak -ReplaceInName
+
 #region Download bacpac from LCS
 if ($BacpacSasLinkFromLCS.StartsWith('http'))
 {
@@ -72,11 +78,6 @@ If (-not (Test-DbaPath -SqlInstance localhost -Path $($f.FullName)))
 $f | Unblock-File
 $f | Restore-DbaDatabase -SqlInstance localhost -DatabaseName $dbName -ReplaceDbNameInFile -DestinationFileSuffix $dt -Verbose
 Rename-DbaDatabase -SqlInstance localhost -Database $dbName -LogicalName "$($f.BaseName)_<FT>"
-
-## (Optional) Backup current AxDB just in case. You can find this DB as AxDB_original.
-## You can skip this step
-#Write-Host "Backup current AxDB (Optional)" -ForegroundColor Yellow
-#Backup-DbaDatabase -SqlInstance localhost -Database AxDB -Type Full -CompressBackup -BackupFileName dbname-1005_original-backuptype-timestamp.bak -ReplaceInName
 
 #Remove AxDB_Original database, if it exists
 Write-Host "Removing old original database" -ForegroundColor Yellow
