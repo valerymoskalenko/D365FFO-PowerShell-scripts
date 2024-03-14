@@ -1,6 +1,11 @@
 Import-module -Name d365fo.integrations
 Import-Module -Name ImportExcel
 
+#Configure D365 OData
+#Add-D365ODataConfig -Name Test -Tenant ciellos.com -url https://usnconeboxax1aos.cloud.onebox.dynamics.com -ClientId 37ba221e-0000-0000-0000-19a5ecfaafa7 -ClientSecret LLm8***************************a2F
+# Test D365 OData
+#$entity = Get-D365ODataPublicEntity -EntityName CustomersV3
+
 $ErrorActionPreference = "Stop"
 
 $EntitiesToProcess = @("SalesInvoiceHeadersV2","SalesInvoiceLines","SalesOrderHeadersV2","SalesOrderLines",
@@ -47,7 +52,7 @@ foreach($entityName in $EntitiesToProcess)
             #$singleProperty.LabelId = $labelValue;
         }
 
-    #Add line to the Headers 
+    #Add a line to the Headers 
     $entitesHeaders += [pscustomobject]@{"Name" = $entityProperties.Name; "Entity Set Name" = $entityProperties.EntitySetName; "Description" = $labelValue; "Is Read Only" = $entityProperties.IsReadOnly; "Configuration Enabled" = $entityProperties.ConfigurationEnabled}
 
     #Loop for the Labels
