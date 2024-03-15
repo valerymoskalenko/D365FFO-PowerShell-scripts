@@ -8,17 +8,22 @@ Import-Module -Name ImportExcel
 
 $ErrorActionPreference = "Stop"
 
-$EntitiesToProcess = @("SalesInvoiceHeadersV2","SalesInvoiceLines","SalesOrderHeadersV2","SalesOrderLines",
-"EmployeesV2","CustomersV3","VendorsV3",
+$EntitiesToProcess = @(
+"SalesInvoiceHeadersV2","SalesInvoiceLines","SalesOrderHeadersV2","SalesOrderLines",
+#"EmployeesV2","CustomersV3","VendorsV3",
+#"TradeAgreementJournalNames","OpenTradeAgreementJournalHeadersV2","SalesPriceAgreements",
+#"MultilineDiscountCustomerGroups","LineDiscountProductGroups","LineDiscountCustomerGroups","PriceCustomerGroups",
 "DeliveryTerms","PaymentTerms","CustomerGroups",
-"SellableReleasedProducts","ReleasedDistinctProductsV2","ProductTranslations",
-"ProductCategories","ProductCategoryHierarchies",
+#"SellableReleasedProducts","ReleasedDistinctProductsV2","ProductTranslations",
+#"ProductCategories","ProductCategoryHierarchies",
+
 "DimAttributeInventItemGroups","DimAttributeCustGroups","DimAttributeCustTables","DimAttributeFinancialTags","DimAttributeHcmWorkers","DimAttributeProjTables",
 "SalesOrderOriginCodes","SalesOrderPools"
 )
 
 $df = Get-Date -Format "yyyy-MM-dd hhmmssffff"
 $ExcelFile = "C:\Temp\DataEntitiesPS"+$df+".xlsx"
+[uri]$uri = ''
 
 #Preparing for the GetLabels 
 [uri]$uriHost = $(Get-D365ODataConfig).url
@@ -45,7 +50,7 @@ foreach($entityName in $EntitiesToProcess)
         if (($label.Length -gt 1) -and ($label.Contains('@')))
         {
             Write-Host "  Working on Label $label ..." -ForegroundColor Gray
-            $uri = $uriHost.AbsoluteUri + "/metadata/Labels(Id='"+ $label +"',Language='en-us')";
+            [uri]$uri = $uriHost.AbsoluteUri + "metadata/Labels(Id='"+ $label +"',Language='en-us')";
             $resultREST = Invoke-RestMethod -Method Get -Uri $uri.AbsoluteUri -Headers $headers -ContentType 'application/json; charset=utf-8' #-Verbose
             $labelValue = $resultREST.Value
 
@@ -64,7 +69,7 @@ foreach($entityName in $EntitiesToProcess)
         if (($label.Length -gt 1) -and ($label.Contains('@')))
         {
             Write-Host "  Working on Label $label ..." -ForegroundColor Gray
-            $uri = $uriHost.AbsoluteUri + "/metadata/Labels(Id='"+ $label +"',Language='en-us')";
+            [uri]$uri = $uriHost.AbsoluteUri + "/metadata/Labels(Id='"+ $label +"',Language='en-us')";
             $resultREST = Invoke-RestMethod -Method Get -Uri $uri.AbsoluteUri -Headers $headers -ContentType 'application/json; charset=utf-8' #-Verbose
             $labelValue = $resultREST.Value
 
@@ -72,9 +77,14 @@ foreach($entityName in $EntitiesToProcess)
         }
     }
 
+    $dataExample = Get-D365ODataEntityData -EntityName $entityName -ODataQuery '$top=50'
+
     #Export to Excel
     $xl = $entityProperties.Properties | Export-Excel -ExcelPackage $xl -WorksheetName $entityProperties.Name -TableName $($entityProperties.Name+"_Fields") -AutoSize -PassThru
-
+    
+    $propertiesCount = $entityProperties.Properties.Count + 4
+    $xl = $dataExample| Export-Excel -ExcelPackage $xl -WorksheetName $entityProperties.Name -TableName $($entityProperties.Name+"_Data") -StartRow $propertiesCount -TableStyle Medium17 -MaxAutoSizeRows 60 -NoNumberConversion * -PassThru #-AutoSize
+    #$xl = Set-ExcelColumn -ExcelPackage $xl -WorksheetName $entityProperties.Name -Column 1 -Width 40 -PassThru
 }
 
 
@@ -83,5 +93,3 @@ $xl = $entitesHeaders | Export-Excel -ExcelPackage $xl -WorksheetName "Header" -
 
 #Save Excel
 Close-ExcelPackage $xl -Show
-
-
