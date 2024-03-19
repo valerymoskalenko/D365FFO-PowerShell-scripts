@@ -93,7 +93,7 @@ foreach($entityName in $EntitiesToProcess)
     $dataExample = Get-D365ODataEntityData -EntityName $entityName -ODataQuery $getODataTop -Verbose
 
     #Export to Excel
-    [string]$xlWorksheetName = $entityProperties.Name[0..30] -join ""
+    [string]$xlWorksheetName = $entityProperties.Name[0..30] -join "" #Please find more details here https://stackoverflow.com/questions/2336435/powershell-how-to-limit-string-to-n-characters
     $xl = $entityProperties.Properties | Export-Excel -ExcelPackage $xl -WorksheetName $xlWorksheetName -TableName $($entityProperties.Name+"_Fields") -AutoSize -PassThru
     
     $propertiesCount = $entityProperties.Properties.Count + 4
