@@ -134,20 +134,21 @@ cd "C:\Temp\d365fo.tools\NuGet"
 
 #Optional
 #Updating project file
-$TFS_ProjectFile = Join-Path -Path $TFS_FolderWithBuildProject -ChildPath $TFS_ProjectFileName
-Write-Host "Updatiing project file" $TFS_ProjectFile -ForegroundColor Yellow
-[xml]$TFS_ProjectContent = Get-Content -Path $TFS_ProjectFile
-if ($null -eq $TFS_ProjectContent.Project.ItemGroup.Folder)
-{
-    Write-Host "There is no folders added to the project. Skipping it. Please add it manually." -ForegroundColor Yellow
-}
-else 
-{
-    $id = $TFS_ProjectContent.Project.ItemGroup.Folder[0].Clone();
-    $id.Attributes[0].Value = $DevOpsFeedName
-    $TFS_ProjectContent.Project.ItemGroup.AppendChild($id)
-    $TFS_ProjectContent.Save($TFS_ProjectFile)        
-}
-
-Write-Host "Please do not forget to add folder" $TFS_Folder "to the code repository"
-Write-Host "Then check your pending changes"
+#$TFS_ProjectFile = Join-Path -Path $TFS_FolderWithBuildProject -ChildPath $TFS_ProjectFileName
+#Write-Host "Updatiing project file" $TFS_ProjectFile -ForegroundColor Yellow
+#[xml]$TFS_ProjectContent = Get-Content -Path $TFS_ProjectFile
+#if ($null -eq $TFS_ProjectContent.Project.ItemGroup.Folder)
+#{
+#    Write-Host "There is no folders added to the project. Skipping it. Please add it manually." -ForegroundColor Yellow
+#}
+#else 
+#{
+#    $id = $TFS_ProjectContent.Project.ItemGroup.Folder[0].Clone();
+#    $id.Attributes[0].Value = $DevOpsFeedName
+#    $TFS_ProjectContent.Project.ItemGroup.AppendChild($id)
+#    $TFS_ProjectContent.Save($TFS_ProjectFile)        
+#}
+#
+#Write-Host "Please do not forget to add folder" $TFS_Folder "to the code repository"
+#Write-Host "Then check your pending changes"
+#
