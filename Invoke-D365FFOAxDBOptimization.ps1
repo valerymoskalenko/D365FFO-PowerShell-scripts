@@ -33,7 +33,12 @@ $scriptFullPath = Join-Path $scriptPath $scriptName
 New-Item -Path $scriptPath -ItemType Directory -Force
 Set-Content -Value $script -Path $scriptFullPath -Force
 
-Write-Host "Running Script for the first time..." -ForegroundColor Yellow
+#region Apply SQL Connection settings <--
+Set-DbatoolsConfig -FullName sql.connection.trustcert -Value $true 
+Set-DbatoolsConfig -FullName sql.connection.encrypt -Value $false
+#endregion Apply SQL Connection settings -->
+
+Write-Host "Running Script for the first time... It may take about 30-60 minutes" -ForegroundColor Yellow
 Invoke-Expression $scriptFullPath
 
 Write-Host "Registering the Script as Scheduled Task to run it Daily..." -ForegroundColor Yellow
