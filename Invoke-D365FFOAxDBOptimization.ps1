@@ -5,7 +5,7 @@ $scriptName = 'Optimize-AxDB.ps1'
 
 Write-Host "Installing Ola Hallengren's SQL Maintenance scripts"
 Import-Module -Name dbatools
-Install-DbaMaintenanceSolution -SqlInstance . -Database master
+Install-DbaMaintenanceSolution -SqlInstance . -Database master -Solution IndexOptimize -ReplaceExisting
 Write-Host "Running Ola Hallengren's IndexOptimize tool"
 
 Write-Host "Saving Script..." -ForegroundColor Yellow
