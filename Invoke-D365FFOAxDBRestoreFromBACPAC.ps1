@@ -98,97 +98,39 @@ Clear-D365BacpacTableData -Path $f.FullName -ClearFromSource -Table $Tables2Clea
 $ErrorActionPreference = "Stop"
 #endregion Clean up tables -->
 
-New-DbaDatabase -SqlInstance localhost -Name $NewDB #-RecoveryModel Simple
-
-#region Fix AutoDrop issue <--
-Write-Host "Fix AutoDrop issue in the BACPAC" $($f.FullName) -ForegroundColor Yellow
-# Taken from https://gist.github.com/FH-Inway/f485c720b43b72bffaca5fb6c094707e
-function Local-FixBacPacModelFile
-{
-    param(
-        [string]$sourceFile, 
-        [string]$destinationFile,
-        [int]$flushCnt = 500000
-    )
-
-    if($sourceFile.Equals($destinationFile, [System.StringComparison]::CurrentCultureIgnoreCase))
-    {
-        throw "Source and destination files must not be the same."
-        return;
-    }
-
-    $searchForString = '<Property Name="AutoDrop" Value="True" />';
-    $replaceWithString = '';
-
-    #using performance suggestions from here: https://learn.microsoft.com/en-us/powershell/scripting/dev-cross-plat/performance/script-authoring-considerations
-    # * use List<String> instead of PS Array @()
-    # * use StreamReader instead of Get-Content
-    $buffer = [System.Collections.Generic.List[string]]::new($flushCnt) #much faster than PS array using +=
-    $buffCnt = 0;
-
-    #delete dest file if it already exists.
-    if(Test-Path -LiteralPath $destinationFile)
-    {
-        Remove-Item -LiteralPath $destinationFile -Force;
-    }
-
-    try
-    {
-        $stream = [System.IO.StreamReader]::new($sourceFile)
-        $streamEncoding = $stream.CurrentEncoding;
-        Write-Verbose "StreamReader.CurrentEncoding: $($streamEncoding.BodyName) $($streamEncoding.CodePage)"
-
-        while ($stream.Peek() -ge 0)
-        {
-            $line = $stream.ReadLine()
-            if(-not [string]::IsNullOrEmpty($line))
-            {
-                $buffer.Add($line.Replace($searchForString,$replaceWithString));
-            }
-            else
-            {
-                $buffer.Add($line);
-            }
-
-            $buffCnt++;
-            if($buffCnt -ge $flushCnt)
-            {
-                Write-Verbose "$(Get-Date -Format 'u') Flush buffer"
-                $buffer | Add-Content -LiteralPath $destinationFile -Encoding UTF8
-                $buffer = [System.Collections.Generic.List[string]]::new($flushCnt);
-                $buffCnt = 0;
-                Write-Verbose "$(Get-Date -Format 'u') Flush complete"
-            }
-        }
-    }
-    finally
-    {
-        $stream.Dispose()
-        Write-Verbose 'Stream disposed'
-    }
-
-    #flush anything still remaining in the buffer
-    if($buffCnt -gt 0)
-    {
-        $buffer | Add-Content -LiteralPath $destinationFile -Encoding UTF8
-        $buffer = $null;
-        $buffCnt = 0;
-    }
-
-}
+#Fix bacpac model file
 $modelFilePath = Join-Path $TempFolder "BacpacModel$($NewDB).xml" 
 $modelFileUpdatedPath = Join-Path $TempFolder "UpdatedBacpacModel$($NewDB).xml"
-
 Export-D365BacpacModelFile -Path $f.FullName -OutputPath $modelFilePath -Force
-Local-FixBacPacModelFile -sourceFile $modelFilePath -destinationFile $modelFileUpdatedPath
 
+$repairSimple = @'
+[
+    {
+        "Search": "*<Element Type=\"SqlPermissionStatement\"*ms_db_configreader*",
+        "End": "*</Element>*"
+    },
+    {
+        "Search": "*<Element Type=\"SqlPermissionStatement\"*ms_db_configwriter*",
+        "End": "*</Element>*"
+    },
+	{
+        "Search": "*<Element Type=\"SqlPermissionStatement\"*KillDatabaseConnection*",
+        "End": "*</Element>*"
+    }
+]
+'@
+$repairSimpleFile = Join-Path $TempFolder "repairSimple.json"
+$repairSimple | Set-Content -Path $repairSimpleFile -Force
+
+Repair-D365BacpacModelFile -Path $modelFilePath -OutputPath $modelFileUpdatedPath -PathRepairSimple $repairSimpleFile -Verbose
+
+#Import
 Write-Host "Import BACPAC file to the SQL database" $NewDB -ForegroundColor Yellow
+New-DbaDatabase -SqlInstance localhost -Name $NewDB -RecoveryModel Simple
 Import-D365Bacpac -ImportModeTier1 -BacpacFile $f.FullName -ModelFile $modelFileUpdatedPath -NewDatabaseName $NewDB -Verbose
-#endregion Fix AutoDrop issue -->
 
 #Write-Host "Import BACPAC file to the SQL database" $NewDB -ForegroundColor Yellow
 #Import-D365Bacpac -ImportModeTier1 -BacpacFile $f.FullName -NewDatabaseName $NewDB -Verbose
-
 
 ## Backup NewDB database (optional)
 Write-Host "Backup $NewDB just in case" -ForegroundColor Yellow
