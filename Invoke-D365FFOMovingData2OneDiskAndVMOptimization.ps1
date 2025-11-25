@@ -138,7 +138,7 @@ Invoke-DbaQuery -SqlInstance localhost -Database master -Query $SQLScriptMoveTem
 
 #region SQL Databases optimization: Set grow step and Execute DB Shrink -->
 #Import SQL PowerShell module
-Import-Module SQLPS –DisableNameChecking
+Import-Module SQLPS -DisableNameChecking
 Write-Host 'SQL Performance optimization: Set growing factor to 64MByte' -ForegroundColor Yellow
 
 foreach($database in @('AxDB','AxDW','DynamicsAxReportServer','DynamicsAxReportServerTempDB','DYNAMICSXREFDB','FinancialReportingDb'))
